@@ -65,12 +65,18 @@
             letter-spacing: -0.01em;
             margin-bottom: 8px;
         }
+        .hero-signature-wrap {
+            background: var(--bone);
+            border-radius: 12px;
+            padding: 16px 28px;
+            display: inline-block;
+            margin: 0 auto 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
         .hero-signature {
-            max-width: 360px;
+            max-width: 320px;
             width: 100%;
             height: auto;
-            filter: brightness(0) invert(1);
-            margin: 0 auto 6px;
             display: block;
         }
         .hero-role {
@@ -226,7 +232,9 @@
     <section class="hero">
         <div class="hero-inner">
             <div class="hero-mark"><img src="./logo_flora.png" alt="Flora Macêdo"></div>
-            <img src="./assinatura_flora.png" alt="Flora Macedo" class="hero-signature">
+            <div class="hero-signature-wrap">
+                <img src="./assinatura_flora.png" alt="Flora Macedo" class="hero-signature">
+            </div>
             <p class="hero-role">Terapias Holísticas</p>
             <p>Escolha um horário disponível abaixo e agende seu atendimento em poucos segundos — sem precisar trocar mensagens.</p>
         </div>
