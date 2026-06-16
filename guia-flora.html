@@ -16,7 +16,9 @@
         * { margin:0; padding:0; box-sizing:border-box; }
         body { background: var(--bone); color: var(--ink); font-family:'Inter',sans-serif; line-height:1.7; }
 
-        header { background: linear-gradient(165deg, var(--clay), var(--clay-dk)); color: var(--bone); padding: 48px 24px 56px; text-align: center; }
+        header { background: linear-gradient(165deg, var(--clay), var(--clay-dk)); color: var(--bone); padding: 48px 24px 56px; text-align: center; position: relative; }
+        .btn-voltar-painel { position: absolute; top: 20px; left: 20px; display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); color: var(--bone); padding: 8px 14px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; transition: background 0.2s; }
+        .btn-voltar-painel:hover { background: rgba(255,255,255,0.22); }
         .logo { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 20px; box-shadow: 0 0 0 1px rgba(184,146,74,0.5), 0 6px 20px rgba(0,0,0,0.2); }
         header h1 { font-family:'Fraunces',serif; font-weight: 600; font-size: 1.7rem; margin-bottom: 6px; }
         header p { font-size: 0.9rem; opacity: 0.85; }
@@ -57,12 +59,14 @@
         @media (max-width: 480px) {
             .step-header { padding: 16px 20px; }
             .step-body { padding: 18px 20px; }
+            .btn-voltar-painel { position: static; display: inline-flex; margin-bottom: 16px; }
         }
     </style>
 </head>
 <body>
 
     <header>
+        <a href="./painel-flora.html" class="btn-voltar-painel"><i class="bi bi-arrow-left"></i> Voltar ao Painel</a>
         <img src="./logo_flora.png" alt="Flora Macêdo" class="logo">
         <h1>Como usar sua Agenda</h1>
         <p>Guia simples para o dia a dia</p>
@@ -182,7 +186,7 @@
     </main>
 
     <footer>
-        <p>Qualquer dúvida, é só chamar o Flávio, o amor da sua vida!</p>
+        <p>Qualquer dúvida, é só chamar o Flávio</p>
         <p style="margin-top:4px;"><a href="https://wa.me/5515997571977">Falar no WhatsApp</a></p>
         <p style="margin-top:14px; font-size:0.74rem; opacity:0.75;">Desenvolvido por <strong style="color:var(--clay);">65.611.420 FLAVIO GONCALES</strong></p>
     </footer>
