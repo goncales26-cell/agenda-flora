@@ -69,6 +69,8 @@
         .booking-date { font-size:0.8rem; color:var(--clay-dk); font-weight:600; }
         .booking-card-bottom { display:flex; gap:16px; font-size:0.85rem; color:var(--muted); }
         .booking-card-bottom a { color:var(--moss); text-decoration:none; font-weight:600; }
+        .btn-cancel-booking { display:flex; align-items:center; gap:6px; background:none; border:1px solid var(--red); color:var(--red); padding:7px 14px; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; margin-top:12px; transition:all 0.2s; }
+        .btn-cancel-booking:hover { background:var(--red); color:white; }
 
         .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--moss); color:white; padding:12px 24px; border-radius:8px; font-size:0.88rem; font-weight:600; transition:transform 0.3s; z-index:999; }
         .toast.show { transform:translateX(-50%) translateY(0); }
@@ -225,13 +227,30 @@
             document.getElementById('novo-horario').value = '';
         }
 
-        // ── REMOVER HORÁRIO ──
+        // ── REMOVER HORÁRIO (livre, sem cliente) ──
         async function removerSlot(dataISO, horario) {
             if (!confirm('Remover este horário da agenda?')) return;
             dadosAtuais.slots = dadosAtuais.slots.filter(s => !(s.dataISO === dataISO && s.horario === horario));
             await salvarDados();
             renderizarTudo();
             mostrarToast('Horário removido');
+        }
+
+        // ── CANCELAR AGENDAMENTO (libera o horário de volta para a agenda pública) ──
+        async function cancelarAgendamento(dataISO, horario) {
+            if (!confirm('Cancelar este agendamento? O horário ficará disponível novamente para outras clientes.')) return;
+
+            dadosAtuais.slots = dadosAtuais.slots.map(s => {
+                if (s.dataISO === dataISO && s.horario === horario) {
+                    // Remove os dados da cliente e libera o horário
+                    return { dataISO: s.dataISO, horario: s.horario, ocupado: false };
+                }
+                return s;
+            });
+
+            await salvarDados();
+            renderizarTudo();
+            mostrarToast('Agendamento cancelado — horário liberado novamente');
         }
 
         // ── RENDERIZA TUDO ──
@@ -275,6 +294,9 @@
                                 <span><i class="bi bi-stars"></i> ${b.servico || '—'}</span>
                                 ${telLimpo ? `<a href="https://wa.me/55${telLimpo}" target="_blank"><i class="bi bi-whatsapp"></i> ${b.telefone}</a>` : ''}
                             </div>
+                            <button class="btn-cancel-booking" onclick="cancelarAgendamento('${b.dataISO}','${b.horario}')">
+                                <i class="bi bi-x-circle"></i> Cancelar agendamento
+                            </button>
                         </div>`;
                 }).join('');
             }
