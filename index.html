@@ -12,14 +12,14 @@
 
     <style>
         :root {
-            --clay:    #6B8A6E;
-            --clay-dk: #4D6650;
-            --sand:    #E7EDE3;
-            --bone:    #F6F8F4;
-            --ink:     #283228;
-            --moss:    #A98B5D;
-            --muted:   #7C8A78;
-            --line:    #D3DECE;
+            --clay:    #1F4D33;
+            --clay-dk: #143524;
+            --sand:    #E9EDE1;
+            --bone:    #F7F6F0;
+            --ink:     #1C2A20;
+            --moss:    #B8924A;
+            --muted:   #6F7D6A;
+            --line:    #D9DECB;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -50,13 +50,14 @@
         }
         .hero-inner { position: relative; max-width: 580px; margin: 0 auto; }
         .hero-mark {
-            width: 56px; height: 56px;
-            border: 1.5px solid rgba(247,242,233,0.5);
+            width: 88px; height: 88px;
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 28px;
-            font-size: 1.4rem;
+            overflow: hidden;
+            margin: 0 auto 24px;
+            box-shadow: 0 0 0 1px rgba(184,146,74,0.4), 0 8px 24px rgba(0,0,0,0.25);
+            background: white;
         }
+        .hero-mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .hero h1 {
             font-family: 'Fraunces', serif;
             font-weight: 500;
@@ -120,8 +121,8 @@
             cursor: pointer;
             transition: all 0.25s ease;
         }
-        .slot-card:hover { border-color: var(--clay); background: white; box-shadow: 0 6px 20px rgba(181,112,74,0.12); transform: translateY(-2px); }
-        .slot-card.selected { border-color: var(--clay); background: var(--sand); }
+        .slot-card:hover { border-color: var(--moss); background: white; box-shadow: 0 6px 20px rgba(31,77,51,0.1); transform: translateY(-2px); }
+        .slot-card.selected { border-color: var(--moss); background: var(--sand); }
         .slot-info { display: flex; align-items: center; gap: 16px; }
         .slot-date-badge {
             background: var(--clay);
@@ -132,12 +133,13 @@
             font-family: 'Fraunces', serif;
             line-height: 1.1;
             min-width: 58px;
+            border: 1px solid rgba(184,146,74,0.5);
         }
         .slot-date-badge .day { font-size: 1.3rem; font-weight: 600; display: block; }
-        .slot-date-badge .month { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.85; }
+        .slot-date-badge .month { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--moss); }
         .slot-text strong { display: block; font-size: 1rem; color: var(--ink); }
         .slot-text span { font-size: 0.82rem; color: var(--muted); }
-        .slot-arrow { color: var(--clay); font-size: 1.2rem; transition: transform 0.25s; }
+        .slot-arrow { color: var(--moss); font-size: 1.2rem; transition: transform 0.25s; }
         .slot-card:hover .slot-arrow { transform: translateX(4px); }
 
         .empty-state {
@@ -215,7 +217,7 @@
 
     <section class="hero">
         <div class="hero-inner">
-            <div class="hero-mark"><i class="bi bi-flower1"></i></div>
+            <div class="hero-mark"><img src="./logo_flora.png" alt="Flora Macêdo"></div>
             <h1>Flora Macedo</h1>
             <p class="hero-role">Terapias Holísticas</p>
             <p>Escolha um horário disponível abaixo e agende seu atendimento em poucos segundos — sem precisar trocar mensagens.</p>
