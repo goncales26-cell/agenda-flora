@@ -35,6 +35,8 @@
         header h1 { font-family:'Fraunces',serif; font-weight:600; font-size:1.3rem; }
         header p { font-size:0.8rem; opacity:0.85; }
         .btn-logout { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:8px 16px; border-radius:6px; font-size:0.8rem; cursor:pointer; }
+        .btn-guia { display:flex; align-items:center; gap:6px; background:rgba(184,146,74,0.25); border:1px solid var(--moss); color:white; padding:8px 16px; border-radius:6px; font-size:0.8rem; cursor:pointer; text-decoration:none; transition:background 0.2s; }
+        .btn-guia:hover { background:rgba(184,146,74,0.4); }
 
         main { max-width:760px; margin:0 auto; padding:32px 24px 80px; }
 
@@ -103,7 +105,10 @@
                     <h1>Olá, Flora 🌿</h1>
                     <p>Gerencie sua agenda de atendimentos</p>
                 </div>
-                <button class="btn-logout" onclick="sair()">Sair</button>
+                <div style="display:flex; gap:8px;">
+                    <a href="./guia-flora.html" class="btn-guia"><i class="bi bi-question-circle"></i> Como usar</a>
+                    <button class="btn-logout" onclick="sair()">Sair</button>
+                </div>
             </div>
         </header>
 
