@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Como usar sua Agenda | Flora Macêdo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --clay: #1F4D33; --clay-dk: #143524; --sand: #E9EDE1;
+            --bone: #F7F6F0; --ink: #1C2A20; --moss: #B8924A;
+            --muted: #6F7D6A; --line: #D9DECB;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background: var(--bone); color: var(--ink); font-family:'Inter',sans-serif; line-height:1.7; }
+
+        header { background: linear-gradient(165deg, var(--clay), var(--clay-dk)); color: var(--bone); padding: 48px 24px 56px; text-align: center; }
+        .logo { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 20px; box-shadow: 0 0 0 1px rgba(184,146,74,0.5), 0 6px 20px rgba(0,0,0,0.2); }
+        header h1 { font-family:'Fraunces',serif; font-weight: 600; font-size: 1.7rem; margin-bottom: 6px; }
+        header p { font-size: 0.9rem; opacity: 0.85; }
+
+        main { max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+
+        .intro { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 32px; font-size: 0.95rem; color: var(--muted); }
+        .intro strong { color: var(--clay); }
+
+        .step { background: white; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+        .step-header { display: flex; align-items: center; gap: 14px; padding: 20px 24px; background: var(--sand); border-bottom: 1px solid var(--line); }
+        .step-num { width: 36px; height: 36px; background: var(--clay); color: var(--bone); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family:'Fraunces',serif; font-weight: 600; font-size: 1.05rem; flex-shrink: 0; }
+        .step-header h2 { font-family:'Fraunces',serif; font-weight: 600; font-size: 1.15rem; }
+        .step-body { padding: 22px 24px; }
+        .step-body p { font-size: 0.93rem; color: var(--ink); margin-bottom: 10px; }
+        .step-body p:last-child { margin-bottom: 0; }
+
+        .highlight-box { background: var(--sand); border-left: 3px solid var(--moss); border-radius: 6px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; }
+        .highlight-box strong { color: var(--clay); }
+
+        .link-box { display: flex; align-items: center; gap: 10px; background: var(--clay); color: var(--bone); border-radius: 8px; padding: 14px 18px; font-size: 0.9rem; font-weight: 500; margin: 14px 0; word-break: break-all; }
+        .link-box i { font-size: 1.1rem; flex-shrink: 0; }
+
+        .tip-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+        .tip-row i { color: var(--moss); font-size: 1rem; margin-top: 2px; flex-shrink: 0; }
+        .tip-row p { margin-bottom: 0 !important; }
+
+        .faq-item { border-bottom: 1px solid var(--line); padding: 16px 0; }
+        .faq-item:last-child { border-bottom: none; }
+        .faq-q { font-weight: 600; font-size: 0.94rem; color: var(--clay); margin-bottom: 6px; display: flex; gap: 8px; }
+        .faq-a { font-size: 0.9rem; color: var(--muted); }
+
+        .section-title { font-family:'Fraunces',serif; font-weight: 600; font-size: 1.4rem; margin: 48px 0 20px; color: var(--clay); }
+
+        footer { text-align: center; padding: 32px 24px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); }
+        footer a { color: var(--clay); text-decoration: none; font-weight: 600; }
+
+        @media (max-width: 480px) {
+            .step-header { padding: 16px 20px; }
+            .step-body { padding: 18px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="./logo_flora.png" alt="Flora Macêdo" class="logo">
+        <h1>Como usar sua Agenda</h1>
+        <p>Guia simples para o dia a dia</p>
+    </header>
+
+    <main>
+
+        <div class="intro">
+            Esse é o seu guia rápido para usar a agenda online. Não precisa decorar nada — sempre que tiver dúvida, é só voltar aqui e seguir o passo a passo. <strong>Leva menos de 2 minutos para abrir um novo horário.</strong>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">1</div>
+                <h2>Entrar no seu painel</h2>
+            </div>
+            <div class="step-body">
+                <p>Acesse este link no seu celular ou computador:</p>
+                <div class="link-box"><i class="bi bi-link-45deg"></i> agenda-flora.vercel.app/painel-flora.html</div>
+                <p>Dica: salve esse link nos favoritos do navegador ou na tela inicial do celular, assim você não precisa digitar de novo.</p>
+                <div class="highlight-box">
+                    <strong>Sua senha:</strong> flora2026
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">2</div>
+                <h2>Abrir um novo horário</h2>
+            </div>
+            <div class="step-body">
+                <p>Dentro do painel, você vai ver uma caixa chamada <strong>"Abrir novo horário"</strong>. É só:</p>
+                <div class="tip-row"><i class="bi bi-1-circle-fill"></i><p>Escolher a <strong>data</strong> clicando no campo de calendário</p></div>
+                <div class="tip-row"><i class="bi bi-2-circle-fill"></i><p>Escolher o <strong>horário</strong> clicando no campo de hora</p></div>
+                <div class="tip-row"><i class="bi bi-3-circle-fill"></i><p>Clicar no botão verde <strong>"Adicionar"</strong></p></div>
+                <p>Pronto! Esse horário já aparece na sua agenda pública para qualquer cliente agendar.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">3</div>
+                <h2>Ver quem agendou</h2>
+            </div>
+            <div class="step-body">
+                <p>Mais abaixo no painel tem a seção <strong>"Clientes agendadas"</strong>. Lá aparece o nome, o atendimento escolhido e o WhatsApp de cada pessoa que marcou horário.</p>
+                <div class="highlight-box">
+                    Clique no número de WhatsApp da cliente para já abrir uma conversa direto com ela, se precisar confirmar algum detalhe.
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">4</div>
+                <h2>Remover um horário</h2>
+            </div>
+            <div class="step-body">
+                <p>Se você quiser cancelar um horário que ainda está <strong>livre</strong> (ninguém marcou ainda), basta clicar no ícone da lixeira ao lado dele, na lista de "Horários da semana".</p>
+                <div class="highlight-box">
+                    <strong>Importante:</strong> só é possível remover horários que ainda estão livres. Os que já têm cliente marcada ficam guardados como histórico.
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Para enviar às suas clientes</h2>
+
+        <div class="step">
+            <div class="step-body">
+                <p>Esse é o link que você manda para quem quiser agendar um atendimento:</p>
+                <div class="link-box"><i class="bi bi-send"></i> agenda-flora.vercel.app</div>
+                <p>A cliente abre o link, escolhe o atendimento (Reiki, Tarô, etc), escolhe um horário disponível, preenche o nome e o WhatsApp dela, e confirma. Simples assim — sem trocar mensagem com você antes.</p>
+            </div>
+        </div>
+
+        <h2 class="section-title">Perguntas frequentes</h2>
+
+        <div class="step">
+            <div class="step-body">
+                <div class="faq-item">
+                    <div class="faq-q"><i class="bi bi-question-circle"></i> E se eu quiser trocar minha senha?</div>
+                    <div class="faq-a">Por enquanto a senha é fixa no sistema. Se quiser trocar, é só me chamar e eu atualizo para você.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q"><i class="bi bi-question-circle"></i> A cliente pode agendar um horário duas vezes?</div>
+                    <div class="faq-a">Não. Assim que alguém agenda, aquele horário desaparece da lista pública automaticamente — ninguém mais consegue marcar o mesmo horário.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q"><i class="bi bi-question-circle"></i> Posso abrir vários horários de uma vez?</div>
+                    <div class="faq-a">Sim! Repita o passo 2 quantas vezes precisar — um para cada dia e horário que quiser deixar disponível.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q"><i class="bi bi-question-circle"></i> O que acontece se eu não abrir nenhum horário?</div>
+                    <div class="faq-a">A página mostra a mensagem "Nenhum horário disponível" para quem visitar. Assim que você abrir um horário no painel, ele aparece na hora.</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>Qualquer dúvida, é só chamar o Flávio</p>
+        <p style="margin-top:4px;"><a href="https://wa.me/5515997571977">Falar no WhatsApp</a></p>
+    </footer>
+
+</body>
+</html>
