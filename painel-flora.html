@@ -75,12 +75,30 @@
         .btn-cancel-booking { display:flex; align-items:center; gap:6px; background:none; border:1px solid var(--red); color:var(--red); padding:7px 14px; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; margin-top:12px; transition:all 0.2s; }
         .btn-cancel-booking:hover { background:var(--red); color:white; }
 
+        /* CALENDÁRIO */
+        .calendar-card { margin-bottom:20px; }
+        .calendar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+        .calendar-header h3 { font-family:'Fraunces',serif; font-weight:600; font-size:1rem; text-transform:capitalize; color:var(--ink); }
+        .calendar-nav-btn { background:var(--sand); border:none; color:var(--clay); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:0.95rem; display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
+        .calendar-nav-btn:hover { background:var(--line); }
+        .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+        .calendar-weekday { text-align:center; font-size:0.68rem; color:var(--muted); font-weight:600; padding-bottom:6px; text-transform:uppercase; }
+        .calendar-day { position:relative; aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:8px; cursor:pointer; font-size:0.85rem; color:var(--ink); transition:background 0.15s; min-width:0; }
+        .calendar-day.empty { cursor:default; }
+        .calendar-day:not(.empty):hover { background:var(--sand); }
+        .calendar-day.hoje { border:1.5px solid var(--clay); font-weight:700; }
+        .calendar-day.selecionado { background:var(--clay); color:white; }
+        .calendar-day.selecionado:hover { background:var(--clay-dk); }
+        .calendar-day .dot { width:5px; height:5px; border-radius:50%; background:var(--moss); margin-top:3px; }
+        .calendar-day.selecionado .dot { background:white; }
+
         .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--moss); color:white; padding:12px 24px; border-radius:8px; font-size:0.88rem; font-weight:600; transition:transform 0.3s; z-index:999; }
         .toast.show { transform:translateX(-50%) translateY(0); }
 
         @media (max-width:480px) {
             .new-slot-form { flex-direction:column; align-items:stretch; }
             .form-group { min-width:100%; }
+            .calendar-day { font-size:0.78rem; }
         }
     </style>
 </head>
@@ -141,6 +159,14 @@
             <!-- AGENDAMENTOS CONFIRMADOS -->
             <div class="panel-section">
                 <h2><i class="bi bi-check-circle"></i> Clientes agendadas</h2>
+                <div class="calendar-card">
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" onclick="mudarMesCalendario(-1)"><i class="bi bi-chevron-left"></i></button>
+                        <h3 id="calendar-mes-label"></h3>
+                        <button class="calendar-nav-btn" onclick="mudarMesCalendario(1)"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid"></div>
+                </div>
                 <div id="bookings-list">
                     <div class="empty-msg">Carregando...</div>
                 </div>
@@ -164,6 +190,14 @@
         const JSONBIN_URL  = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
 
         let dadosAtuais = null;
+
+        // ── ESTADO DO CALENDÁRIO ──
+        let calMes = new Date().getMonth();
+        let calAno = new Date().getFullYear();
+        let diaSelecionado = null;
+        let calendarioInicializado = false;
+        const DIAS_SEMANA = ['D','S','T','Q','Q','S','S'];
+        const MESES_NOME = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
         function verificarSenha() {
             const input = document.getElementById('senha-input');
@@ -259,6 +293,110 @@
             mostrarToast('Agendamento cancelado — horário liberado novamente');
         }
 
+        // ── CALENDÁRIO ──
+        function pad(n) { return String(n).padStart(2,'0'); }
+
+        function mudarMesCalendario(delta) {
+            calMes += delta;
+            if (calMes < 0) { calMes = 11; calAno--; }
+            if (calMes > 11) { calMes = 0; calAno++; }
+            renderizarCalendario();
+        }
+
+        function selecionarDiaCalendario(dataISO) {
+            diaSelecionado = dataISO;
+            renderizarCalendario();
+            renderizarAgendamentosDoDia();
+        }
+
+        // Na primeira carga, abre o calendário já no mês do próximo agendamento
+        function definirEstadoInicialCalendario() {
+            const hojeISO = new Date().toISOString().split('T')[0];
+            const diasComAgendamento = [...new Set((dadosAtuais.slots || []).filter(s => s.ocupado).map(s => s.dataISO))].sort();
+
+            let diaEscolhido = null;
+            if (diasComAgendamento.includes(hojeISO)) diaEscolhido = hojeISO;
+            else diaEscolhido = diasComAgendamento.find(d => d >= hojeISO) || diasComAgendamento[0] || null;
+
+            if (diaEscolhido) {
+                const [ano, mes] = diaEscolhido.split('-').map(Number);
+                calAno = ano;
+                calMes = mes - 1;
+            }
+            diaSelecionado = diaEscolhido;
+        }
+
+        function renderizarCalendario() {
+            document.getElementById('calendar-mes-label').textContent = `${MESES_NOME[calMes]} de ${calAno}`;
+
+            const diasComAgendamento = new Set(
+                (dadosAtuais.slots || []).filter(s => s.ocupado).map(s => s.dataISO)
+            );
+            const hojeISO = new Date().toISOString().split('T')[0];
+            const primeiroDiaSemana = new Date(calAno, calMes, 1).getDay();
+            const totalDias = new Date(calAno, calMes + 1, 0).getDate();
+
+            let html = DIAS_SEMANA.map(d => `<div class="calendar-weekday">${d}</div>`).join('');
+
+            for (let i = 0; i < primeiroDiaSemana; i++) {
+                html += `<div class="calendar-day empty"></div>`;
+            }
+
+            for (let dia = 1; dia <= totalDias; dia++) {
+                const dataISO = `${calAno}-${pad(calMes+1)}-${pad(dia)}`;
+                const temAgendamento = diasComAgendamento.has(dataISO);
+                const classes = ['calendar-day'];
+                if (dataISO === hojeISO) classes.push('hoje');
+                if (dataISO === diaSelecionado) classes.push('selecionado');
+                html += `
+                    <div class="${classes.join(' ')}" onclick="selecionarDiaCalendario('${dataISO}')">
+                        ${dia}
+                        ${temAgendamento ? '<div class="dot"></div>' : ''}
+                    </div>`;
+            }
+
+            document.getElementById('calendar-grid').innerHTML = html;
+        }
+
+        function renderizarAgendamentosDoDia() {
+            const bookingsList = document.getElementById('bookings-list');
+
+            if (!diaSelecionado) {
+                bookingsList.innerHTML = '<div class="empty-msg">Selecione um dia marcado no calendário para ver os agendamentos.</div>';
+                return;
+            }
+
+            const bookingsDoDia = (dadosAtuais.slots || [])
+                .filter(s => s.ocupado && s.dataISO === diaSelecionado)
+                .sort((a,b) => a.horario.localeCompare(b.horario));
+
+            if (bookingsDoDia.length === 0) {
+                const dataFmt = new Date(diaSelecionado+'T00:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+                bookingsList.innerHTML = `<div class="empty-msg">Nenhuma cliente agendada em ${dataFmt}.</div>`;
+                return;
+            }
+
+            bookingsList.innerHTML = bookingsDoDia.map(b => {
+                const telLimpo = (b.telefone || '').replace(/\D/g,'');
+                return `
+                    <div class="booking-card">
+                        <div class="booking-card-top">
+                            <strong>${b.cliente || 'Sem nome'}</strong>
+                            <span class="booking-date">${b.horario}</span>
+                        </div>
+                        <div class="booking-card-bottom">
+                            <span><i class="bi bi-stars"></i> ${b.servico || '—'}</span>
+                            ${b.modalidade ? `<span><i class="bi ${b.modalidade === 'Presencial' ? 'bi-geo-alt' : 'bi-laptop'}"></i> ${b.modalidade}</span>` : ''}
+                            ${b.nascimento ? `<span><i class="bi bi-cake2"></i> ${new Date(b.nascimento+'T00:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
+                            ${telLimpo ? `<a href="https://wa.me/55${telLimpo}" target="_blank"><i class="bi bi-whatsapp"></i> ${b.telefone}</a>` : ''}
+                        </div>
+                        <button class="btn-cancel-booking" onclick="cancelarAgendamento('${b.dataISO}','${b.horario}')">
+                            <i class="bi bi-x-circle"></i> Cancelar agendamento
+                        </button>
+                    </div>`;
+            }).join('');
+        }
+
         // ── RENDERIZA TUDO ──
         function renderizarTudo() {
             const slots = [...dadosAtuais.slots].sort((a,b) => new Date(a.dataISO+'T'+a.horario) - new Date(b.dataISO+'T'+b.horario));
@@ -281,33 +419,13 @@
                 }).join('');
             }
 
-            // Lista de agendamentos confirmados
-            const bookings = slots.filter(s => s.ocupado);
-            const bookingsList = document.getElementById('bookings-list');
-            if (bookings.length === 0) {
-                bookingsList.innerHTML = '<div class="empty-msg">Nenhuma cliente agendada ainda.</div>';
-            } else {
-                bookingsList.innerHTML = bookings.map(b => {
-                    const dataFmt = new Date(b.dataISO+'T00:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
-                    const telLimpo = (b.telefone || '').replace(/\D/g,'');
-                    return `
-                        <div class="booking-card">
-                            <div class="booking-card-top">
-                                <strong>${b.cliente || 'Sem nome'}</strong>
-                                <span class="booking-date">${dataFmt} · ${b.horario}</span>
-                            </div>
-                            <div class="booking-card-bottom">
-                                <span><i class="bi bi-stars"></i> ${b.servico || '—'}</span>
-                                ${b.modalidade ? `<span><i class="bi ${b.modalidade === 'Presencial' ? 'bi-geo-alt' : 'bi-laptop'}"></i> ${b.modalidade}</span>` : ''}
-                                ${b.nascimento ? `<span><i class="bi bi-cake2"></i> ${new Date(b.nascimento+'T00:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
-                                ${telLimpo ? `<a href="https://wa.me/55${telLimpo}" target="_blank"><i class="bi bi-whatsapp"></i> ${b.telefone}</a>` : ''}
-                            </div>
-                            <button class="btn-cancel-booking" onclick="cancelarAgendamento('${b.dataISO}','${b.horario}')">
-                                <i class="bi bi-x-circle"></i> Cancelar agendamento
-                            </button>
-                        </div>`;
-                }).join('');
+            // Calendário + agendamentos do dia selecionado
+            if (!calendarioInicializado) {
+                definirEstadoInicialCalendario();
+                calendarioInicializado = true;
             }
+            renderizarCalendario();
+            renderizarAgendamentosDoDia();
         }
     </script>
 </body>
