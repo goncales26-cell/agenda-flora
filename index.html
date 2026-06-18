@@ -297,6 +297,7 @@
         let dadosAtuais = null;
         let slotEscolhido = null;
         let tokenGerado = null;
+        let ultimoAgendamento = null; // guarda dados para os botões de WhatsApp
 
         // Gera um código único simples para o link de cancelamento
         function gerarToken() {
@@ -566,6 +567,7 @@
                     }).catch(() => {});
                 }
 
+                ultimoAgendamento = { nome, tel, servico, modalidade, isGrupo };
                 mostrarSucesso();
                 renderizarSlots();
 
@@ -581,11 +583,29 @@
             const isGrupo = slotEscolhido.tipo === 'grupo';
             const data = new Date(slotEscolhido.dataISO + 'T00:00:00');
             const dataFormatada = data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+            const diaSemana = data.toLocaleDateString('pt-BR', { weekday: 'long' });
             const linkCancelamento = `${window.location.origin}${window.location.pathname}?cancelar=${tokenGerado}`;
 
+            const { nome, tel, servico, modalidade } = ultimoAgendamento;
+            const telLimpo = tel.replace(/\D/g,'');
+            const FLORA_WA = '5515981449021';
+
+            // ── Mensagem para a Flora ──
+            const textoFlora = isGrupo
+                ? `🌿 *Nova inscrição — Alma Soma*\n\n👤 *Cliente:* ${nome}\n📱 *WhatsApp:* ${tel}\n📅 *Início:* ${dataFormatada} às ${slotEscolhido.horario}\n🔁 *Programa:* 7 sábados seguidos`
+                : `🌿 *Novo agendamento confirmado!*\n\n👤 *Cliente:* ${nome}\n📱 *WhatsApp:* ${tel}\n📅 *Data:* ${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}, ${dataFormatada} às ${slotEscolhido.horario}\n✨ *Serviço:* ${servico}${modalidade ? `\n📍 *Modalidade:* ${modalidade}` : ''}`;
+
+            // ── Mensagem para a cliente ──
+            const textoCliente = isGrupo
+                ? `🌿 *Meu agendamento — Alma Soma*\n\n📅 *Início:* ${dataFormatada} às ${slotEscolhido.horario}\n🔁 *Programa:* 7 sábados seguidos\n\n🔗 *Link para cancelar se precisar:*\n${linkCancelamento}`
+                : `🌿 *Meu agendamento confirmado!*\n\n📅 *Data:* ${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}, ${dataFormatada} às ${slotEscolhido.horario}\n✨ *Serviço:* ${servico}${modalidade ? `\n📍 *Modalidade:* ${modalidade}` : ''}\n\n🔗 *Link para cancelar se precisar:*\n${linkCancelamento}`;
+
+            const linkFlora   = `https://wa.me/${FLORA_WA}?text=${encodeURIComponent(textoFlora)}`;
+            const linkCliente = `https://wa.me/${telLimpo}?text=${encodeURIComponent(textoCliente)}`;
+
             const mensagem = isGrupo
-                ? `Você está inscrita na turma de Alma Soma com início em <strong>${dataFormatada} às ${slotEscolhido.horario}</strong>. Os 7 sábados estão reservados para você. A Flora entrará em contato com os detalhes.`
-                : `Seu atendimento está marcado para <strong>${dataFormatada} às ${slotEscolhido.horario}</strong>. A Flora foi avisada e qualquer detalhe ela combina direto com você.`;
+                ? `Você está inscrita na turma de Alma Soma com início em <strong>${dataFormatada} às ${slotEscolhido.horario}</strong>. Os 7 sábados estão reservados para você.`
+                : `Seu atendimento está marcado para <strong>${dataFormatada} às ${slotEscolhido.horario}</strong>. Use os botões abaixo para avisar a Flora e salvar sua confirmação.`;
 
             const box = document.getElementById('modal-box');
             box.innerHTML = `
@@ -593,11 +613,17 @@
                     <div class="success-icon"><i class="bi bi-check-lg"></i></div>
                     <h3 style="margin-bottom:10px;">${isGrupo ? 'Inscrição confirmada!' : 'Agendamento confirmado!'}</h3>
                     <p style="color:var(--muted); font-size:0.92rem; margin-bottom:20px;">${mensagem}</p>
-                    <p style="color:var(--muted); font-size:0.8rem; margin-bottom:8px;">Precisar cancelar depois? Guarde este link:</p>
-                    <div style="background:var(--sand); border-radius:8px; padding:10px 12px; font-size:0.76rem; word-break:break-all; margin-bottom:20px; color:var(--clay-dk);">
-                        ${linkCancelamento}
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+                        <a href="${linkFlora}" target="_blank"
+                           style="display:flex; align-items:center; justify-content:center; gap:8px; background:#25D366; color:white; padding:13px; border-radius:8px; font-size:0.9rem; font-weight:600; text-decoration:none;">
+                            <i class="bi bi-whatsapp"></i> Avisar a Flora
+                        </a>
+                        <a href="${linkCliente}" target="_blank"
+                           style="display:flex; align-items:center; justify-content:center; gap:8px; background:var(--sand); color:var(--clay-dk); padding:13px; border-radius:8px; font-size:0.9rem; font-weight:600; text-decoration:none; border:1.5px solid var(--line);">
+                            <i class="bi bi-whatsapp"></i> Salvar minha confirmação
+                        </a>
                     </div>
-                    <button class="btn-confirm" style="width:100%;" onclick="fecharModal()">Fechar</button>
+                    <button class="btn-cancel" style="width:100%;" onclick="fecharModal()">Fechar</button>
                 </div>
             `;
         }
@@ -724,6 +750,12 @@
         // Executa o cancelamento de fato, liberando o horário
         async function executarCancelamentoCliente(dataISO, horario) {
             try {
+                // Guarda os dados antes de apagar do slot
+                const slotAtual = dadosAtuais.slots.find(s => s.dataISO === dataISO && s.horario === horario);
+                const nomeCliente = slotAtual?.cliente || '';
+                const telCliente  = slotAtual?.telefone || '';
+                const servicoSlot = slotAtual?.servico || '';
+
                 const slots = dadosAtuais.slots.map(s => {
                     if (s.dataISO === dataISO && s.horario === horario) {
                         return { dataISO: s.dataISO, horario: s.horario, ocupado: false };
@@ -741,13 +773,30 @@
                 dadosAtuais = novoEstado;
                 renderizarSlots();
 
+                const data = new Date(dataISO + 'T00:00:00');
+                const dataFmt = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+                const FLORA_WA = '5515981449021';
+                const textoFlora   = `🌿 *Cancelamento de agendamento*\n\n👤 *Cliente:* ${nomeCliente}\n📱 *WhatsApp:* ${telCliente}\n📅 *Data cancelada:* ${dataFmt} às ${horario}\n✨ *Serviço:* ${servicoSlot}`;
+                const textoCliente = `🌿 *Cancelamento confirmado*\n\nSeu agendamento de ${servicoSlot} em ${dataFmt} às ${horario} foi cancelado com sucesso.`;
+                const telLimpo = telCliente.replace(/\D/g,'');
+
                 const box = document.getElementById('modal-box');
                 box.innerHTML = `
                     <div style="text-align:center;">
                         <div class="success-icon" style="background:#B5453C;"><i class="bi bi-check-lg"></i></div>
                         <h3 style="margin-bottom:10px;">Agendamento cancelado</h3>
-                        <p style="color:var(--muted); font-size:0.92rem; margin-bottom:24px;">Seu horário foi liberado. Se quiser, você pode agendar novamente quando precisar.</p>
-                        <button class="btn-confirm" style="width:100%;" onclick="fecharModal()">Fechar</button>
+                        <p style="color:var(--muted); font-size:0.92rem; margin-bottom:20px;">Seu horário foi liberado. Use os botões abaixo para confirmar o cancelamento.</p>
+                        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+                            <a href="https://wa.me/${FLORA_WA}?text=${encodeURIComponent(textoFlora)}" target="_blank"
+                               style="display:flex; align-items:center; justify-content:center; gap:8px; background:#25D366; color:white; padding:13px; border-radius:8px; font-size:0.9rem; font-weight:600; text-decoration:none;">
+                                <i class="bi bi-whatsapp"></i> Avisar a Flora
+                            </a>
+                            ${telLimpo ? `<a href="https://wa.me/${telLimpo}?text=${encodeURIComponent(textoCliente)}" target="_blank"
+                               style="display:flex; align-items:center; justify-content:center; gap:8px; background:var(--sand); color:var(--clay-dk); padding:13px; border-radius:8px; font-size:0.9rem; font-weight:600; text-decoration:none; border:1.5px solid var(--line);">
+                                <i class="bi bi-whatsapp"></i> Salvar meu cancelamento
+                            </a>` : ''}
+                        </div>
+                        <button class="btn-cancel" style="width:100%;" onclick="fecharModal()">Fechar</button>
                     </div>
                 `;
             } catch (e) {
@@ -777,6 +826,14 @@
         // Executa o cancelamento de inscrição em grupo pelo cliente
         async function executarCancelamentoGrupoCliente(turmaId, token) {
             try {
+                // Guarda dados do inscrito antes de remover
+                const slotRef = dadosAtuais.slots.find(s => s.turmaId === turmaId && s.sessaoNum === 1);
+                const inscrito = (slotRef?.inscritos || []).find(i => i.token === token);
+                const nomeCliente = inscrito?.nome || '';
+                const telCliente  = inscrito?.telefone || '';
+                const dataInicio  = slotRef?.dataISO || '';
+                const horario     = slotRef?.horario || '';
+
                 const slots = dadosAtuais.slots.map(s => {
                     if (s.turmaId === turmaId) {
                         return { ...s, inscritos: (s.inscritos || []).filter(i => i.token !== token) };
@@ -791,13 +848,31 @@
                 });
                 dadosAtuais = novoEstado;
                 renderizarSlots();
+
+                const data = new Date(dataInicio + 'T00:00:00');
+                const dataFmt = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+                const FLORA_WA = '5515981449021';
+                const textoFlora   = `🌿 *Cancelamento — Alma Soma (grupo)*\n\n👤 *Cliente:* ${nomeCliente}\n📱 *WhatsApp:* ${telCliente}\n📅 *Turma:* início em ${dataFmt} às ${horario}\n🔁 *7 sábados — inscrição cancelada*`;
+                const textoCliente = `🌿 *Cancelamento confirmado — Alma Soma*\n\nSua inscrição na turma de Alma Soma (início em ${dataFmt} às ${horario}) foi cancelada com sucesso.`;
+                const telLimpo = telCliente.replace(/\D/g,'');
+
                 const box = document.getElementById('modal-box');
                 box.innerHTML = `
                     <div style="text-align:center;">
                         <div class="success-icon" style="background:#B5453C;"><i class="bi bi-check-lg"></i></div>
                         <h3 style="margin-bottom:10px;">Inscrição cancelada</h3>
-                        <p style="color:var(--muted); font-size:0.92rem; margin-bottom:24px;">Sua inscrição na turma de Alma Soma foi cancelada.</p>
-                        <button class="btn-confirm" style="width:100%;" onclick="fecharModal()">Fechar</button>
+                        <p style="color:var(--muted); font-size:0.92rem; margin-bottom:20px;">Sua inscrição na turma de Alma Soma foi cancelada. Use os botões abaixo para confirmar.</p>
+                        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+                            <a href="https://wa.me/${FLORA_WA}?text=${encodeURIComponent(textoFlora)}" target="_blank"
+                               style="display:flex; align-items:center; justify-content:center; gap:8px; background:#25D366; color:white; padding:13px; border-radius:8px; font-size:0.9rem; font-weight:600; text-decoration:none;">
+                                <i class="bi bi-whatsapp"></i> Avisar a Flora
+                            </a>
+                            ${telLimpo ? `<a href="https://wa.me/${telLimpo}?text=${encodeURIComponent(textoCliente)}" target="_blank"
+                               style="display:flex; align-items:center; justify-content:center; gap:8px; background:var(--sand); color:var(--clay-dk); padding:13px; border-radius:8px; font-size:0.9rem; font-weight:600; text-decoration:none; border:1.5px solid var(--line);">
+                                <i class="bi bi-whatsapp"></i> Salvar meu cancelamento
+                            </a>` : ''}
+                        </div>
+                        <button class="btn-cancel" style="width:100%;" onclick="fecharModal()">Fechar</button>
                     </div>`;
             } catch (e) {
                 alert('Erro ao cancelar. Tente novamente ou chame no WhatsApp.');
