@@ -256,7 +256,13 @@
     <footer>
         <p>Flora Macedo</p>
         <p style="margin-top:4px;">Dúvidas? <a href="https://wa.me/5515981449021" target="_blank">Fale no WhatsApp</a></p>
-        <div style="margin-top:16px;">
+        <div style="margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <a href="javascript:void(0)" onclick="abrirModalCancelamento()"
+               style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.04); color:var(--muted); border:1px solid var(--line); padding:7px 16px; border-radius:20px; font-size:11px; text-decoration:none; transition:all 0.3s; letter-spacing:0.05em;"
+               onmouseover="this.style.color='var(--clay)'; this.style.borderColor='var(--clay)'; this.style.background='rgba(31,77,51,0.06)';"
+               onmouseout="this.style.color='var(--muted)'; this.style.borderColor='var(--line)'; this.style.background='rgba(0,0,0,0.04)';">
+                <i class="bi bi-x-circle"></i> Cancelar agendamento
+            </a>
             <a href="./painel-flora.html"
                style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.04); color:var(--muted); border:1px solid var(--line); padding:7px 16px; border-radius:20px; font-size:11px; text-decoration:none; transition:all 0.3s; letter-spacing:0.05em;"
                onmouseover="this.style.color='var(--clay)'; this.style.borderColor='var(--clay)'; this.style.background='rgba(31,77,51,0.06)';"
@@ -290,6 +296,12 @@
 
         let dadosAtuais = null;
         let slotEscolhido = null;
+        let tokenGerado = null;
+
+        // Gera um código único simples para o link de cancelamento
+        function gerarToken() {
+            return Math.random().toString(36).substring(2, 10) + Date.now().toString(36).substring(4);
+        }
 
         // ── CARREGA HORÁRIOS DISPONÍVEIS ──
         async function carregarHorarios() {
@@ -438,11 +450,13 @@
             btn.disabled = true;
             btn.textContent = 'Confirmando...';
 
+            tokenGerado = gerarToken();
+
             try {
                 // Marca o slot como ocupado
                 const slots = dadosAtuais.slots.map(s => {
                     if (s.dataISO === slotEscolhido.dataISO && s.horario === slotEscolhido.horario) {
-                        return { ...s, ocupado: true, cliente: nome, telefone: tel, servico: servico, nascimento: nascimento, modalidade: modalidade };
+                        return { ...s, ocupado: true, cliente: nome, telefone: tel, servico: servico, nascimento: nascimento, modalidade: modalidade, token: tokenGerado };
                     }
                     return s;
                 });
@@ -491,22 +505,165 @@
         function mostrarSucesso() {
             const data = new Date(slotEscolhido.dataISO + 'T00:00:00');
             const dataFormatada = data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+            const linkCancelamento = `${window.location.origin}${window.location.pathname}?cancelar=${tokenGerado}`;
 
             const box = document.getElementById('modal-box');
             box.innerHTML = `
                 <div style="text-align:center;">
                     <div class="success-icon"><i class="bi bi-check-lg"></i></div>
                     <h3 style="margin-bottom:10px;">Agendamento confirmado!</h3>
-                    <p style="color:var(--muted); font-size:0.92rem; margin-bottom:24px;">
+                    <p style="color:var(--muted); font-size:0.92rem; margin-bottom:20px;">
                         Seu atendimento está marcado para <strong>${dataFormatada} às ${slotEscolhido.horario}</strong>.
                         A Flora foi avisada e qualquer detalhe ela combina direto com você.
                     </p>
+                    <p style="color:var(--muted); font-size:0.8rem; margin-bottom:8px;">Precisar cancelar depois? Guarde este link:</p>
+                    <div style="background:var(--sand); border-radius:8px; padding:10px 12px; font-size:0.76rem; word-break:break-all; margin-bottom:20px; color:var(--clay-dk);">
+                        ${linkCancelamento}
+                    </div>
                     <button class="btn-confirm" style="width:100%;" onclick="fecharModal()">Fechar</button>
                 </div>
             `;
         }
 
-        carregarHorarios();
+        // ════════════════════════════════════════
+        // CANCELAMENTO PELO PRÓPRIO CLIENTE
+        // ════════════════════════════════════════
+
+        // Abre o modal de busca por WhatsApp
+        function abrirModalCancelamento() {
+            const box = document.getElementById('modal-box');
+            box.innerHTML = `
+                <h3>Cancelar agendamento</h3>
+                <p style="color:var(--muted); font-size:0.88rem; margin-bottom:18px;">Digite o WhatsApp que você usou para agendar.</p>
+                <div class="form-group">
+                    <label>Seu WhatsApp</label>
+                    <input type="text" id="cancel-tel" placeholder="(15) 99999-9999" maxlength="15">
+                </div>
+                <p class="feedback-msg error" id="cancel-erro"></p>
+                <div id="cancel-resultados"></div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="fecharModal()">Fechar</button>
+                    <button class="btn-confirm" onclick="buscarAgendamentosPorTelefone()">Buscar</button>
+                </div>
+            `;
+            document.getElementById('modal-overlay').classList.add('open');
+
+            document.getElementById('cancel-tel').addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\D/g,'').substring(0,11);
+                if (!v) { e.target.value=''; return; }
+                if (v.length<=2) e.target.value='('+v;
+                else if (v.length<=6) e.target.value='('+v.substring(0,2)+') '+v.substring(2);
+                else if (v.length<=10) e.target.value='('+v.substring(0,2)+') '+v.substring(2,6)+'-'+v.substring(6);
+                else e.target.value='('+v.substring(0,2)+') '+v.substring(2,7)+'-'+v.substring(7);
+            });
+        }
+
+        // Busca agendamentos ativos com aquele número de WhatsApp
+        function buscarAgendamentosPorTelefone() {
+            const telDigitado = document.getElementById('cancel-tel').value.replace(/\D/g,'');
+            const erro = document.getElementById('cancel-erro');
+            const resultados = document.getElementById('cancel-resultados');
+            erro.style.display = 'none';
+            resultados.innerHTML = '';
+
+            if (!telDigitado) {
+                erro.textContent = 'Digite seu número de WhatsApp.';
+                erro.style.display = 'block';
+                return;
+            }
+
+            const encontrados = (dadosAtuais.slots || []).filter(s =>
+                s.ocupado && (s.telefone || '').replace(/\D/g,'') === telDigitado
+            );
+
+            if (encontrados.length === 0) {
+                resultados.innerHTML = `<p style="color:var(--muted); font-size:0.86rem; margin-top:14px;">Nenhum agendamento encontrado com esse número.</p>`;
+                return;
+            }
+
+            resultados.innerHTML = encontrados.map(s => {
+                const data = new Date(s.dataISO + 'T00:00:00');
+                const dataFormatada = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+                return `
+                    <div style="background:var(--sand); border-radius:8px; padding:12px 14px; margin-top:12px; font-size:0.88rem;">
+                        <strong>${s.servico || ''}</strong> — ${dataFormatada} às ${s.horario}
+                        <button class="btn-cancel" style="width:100%; margin-top:10px; border-color:#B5453C; color:#B5453C;"
+                            onclick='mostrarConfirmacaoCancelamento(${JSON.stringify(s)})'>
+                            <i class="bi bi-x-circle"></i> Cancelar este agendamento
+                        </button>
+                    </div>`;
+            }).join('');
+        }
+
+        // Tela de confirmação final, usada tanto pela busca quanto pelo link direto
+        function mostrarConfirmacaoCancelamento(slot) {
+            const data = new Date(slot.dataISO + 'T00:00:00');
+            const dataFormatada = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+
+            const box = document.getElementById('modal-box');
+            box.innerHTML = `
+                <h3>Confirmar cancelamento</h3>
+                <div class="modal-summary">
+                    <i class="bi bi-calendar-event"></i> ${slot.servico || ''} — ${dataFormatada} às ${slot.horario}
+                </div>
+                <p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px;">Tem certeza que deseja cancelar? O horário ficará disponível novamente para outras pessoas.</p>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="fecharModal()">Voltar</button>
+                    <button class="btn-confirm" style="background:#B5453C;" onclick="executarCancelamentoCliente('${slot.dataISO}','${slot.horario}')">Sim, cancelar</button>
+                </div>
+            `;
+            document.getElementById('modal-overlay').classList.add('open');
+        }
+
+        // Executa o cancelamento de fato, liberando o horário
+        async function executarCancelamentoCliente(dataISO, horario) {
+            try {
+                const slots = dadosAtuais.slots.map(s => {
+                    if (s.dataISO === dataISO && s.horario === horario) {
+                        return { dataISO: s.dataISO, horario: s.horario, ocupado: false };
+                    }
+                    return s;
+                });
+                const novoEstado = { ...dadosAtuais, slots };
+
+                await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+                    body: JSON.stringify(novoEstado)
+                });
+
+                dadosAtuais = novoEstado;
+                renderizarSlots();
+
+                const box = document.getElementById('modal-box');
+                box.innerHTML = `
+                    <div style="text-align:center;">
+                        <div class="success-icon" style="background:#B5453C;"><i class="bi bi-check-lg"></i></div>
+                        <h3 style="margin-bottom:10px;">Agendamento cancelado</h3>
+                        <p style="color:var(--muted); font-size:0.92rem; margin-bottom:24px;">Seu horário foi liberado. Se quiser, você pode agendar novamente quando precisar.</p>
+                        <button class="btn-confirm" style="width:100%;" onclick="fecharModal()">Fechar</button>
+                    </div>
+                `;
+            } catch (e) {
+                alert('Erro ao cancelar. Tente novamente ou chame no WhatsApp.');
+            }
+        }
+
+        // Verifica se a página foi aberta por um link de cancelamento (?cancelar=TOKEN)
+        function verificarLinkCancelamento() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('cancelar');
+            if (!token || !dadosAtuais) return;
+
+            const slot = (dadosAtuais.slots || []).find(s => s.token === token && s.ocupado);
+            if (!slot) {
+                alert('Este link de cancelamento não é mais válido — talvez o agendamento já tenha sido cancelado.');
+                return;
+            }
+            mostrarConfirmacaoCancelamento(slot);
+        }
+
+        carregarHorarios().then(verificarLinkCancelamento);
     </script>
 </body>
 </html>
