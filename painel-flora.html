@@ -74,6 +74,11 @@
         .booking-card-bottom a { color:var(--moss); text-decoration:none; font-weight:600; }
         .btn-cancel-booking { display:flex; align-items:center; gap:6px; background:none; border:1px solid var(--red); color:var(--red); padding:7px 14px; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; margin-top:12px; transition:all 0.2s; }
         .btn-cancel-booking:hover { background:var(--red); color:white; }
+        .slot-badge.grupo { background:rgba(31,77,51,0.12); color:var(--clay); }
+        .vagas-badge { font-size:0.75rem; color:var(--moss); font-weight:600; }
+        .vagas-badge.lotado { color:var(--red); }
+        .inscrito-item { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:var(--bone); border-radius:6px; margin-top:6px; font-size:0.83rem; flex-wrap:wrap; gap:6px; }
+        .inscrito-item a { color:var(--moss); font-weight:600; text-decoration:none; font-size:0.8rem; }
 
         /* CALENDÁRIO */
         .calendar-card { margin-bottom:20px; }
@@ -137,6 +142,17 @@
                 <h2><i class="bi bi-calendar-plus"></i> Abrir novo horário</h2>
                 <div class="new-slot-form">
                     <div class="form-group">
+                        <label>Serviço</label>
+                        <select id="novo-servico" onchange="atualizarFormSlot()">
+                            <option value="">Qualquer serviço</option>
+                            <option value="Reiki">Reiki</option>
+                            <option value="Alma Soma">Alma Soma (grupo)</option>
+                            <option value="Tarô">Tarô</option>
+                            <option value="Baralho Cigano">Baralho Cigano</option>
+                            <option value="Mesa Radiônica">Mesa Radiônica</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Data</label>
                         <input type="date" id="novo-data">
                     </div>
@@ -144,8 +160,13 @@
                         <label>Horário</label>
                         <input type="time" id="novo-horario">
                     </div>
+                    <div class="form-group" id="grupo-vagas-field" style="display:none;">
+                        <label>Vagas máximas</label>
+                        <input type="number" id="novo-vagas" min="1" max="30" value="8" placeholder="Ex: 8">
+                    </div>
                     <button class="btn-add" onclick="adicionarSlot()"><i class="bi bi-plus-lg"></i> Adicionar</button>
                 </div>
+                <p id="alma-soma-aviso" style="display:none; font-size:0.8rem; color:var(--moss); margin-top:8px;"><i class="bi bi-info-circle"></i> O sistema criará automaticamente os 7 sábados seguintes com o mesmo horário.</p>
             </div>
 
             <!-- HORÁRIOS ABERTOS -->
@@ -252,45 +273,108 @@
             setTimeout(() => toast.classList.remove('show'), 2500);
         }
 
+        // ── SHOW/HIDE CAMPOS CONDICIONAIS DO FORMULÁRIO ──
+        function atualizarFormSlot() {
+            const servico = document.getElementById('novo-servico').value;
+            const isAlmaSoma = servico === 'Alma Soma';
+            document.getElementById('grupo-vagas-field').style.display = isAlmaSoma ? 'block' : 'none';
+            document.getElementById('alma-soma-aviso').style.display = isAlmaSoma ? 'block' : 'none';
+        }
+
+        // ── GERADOR DE ID ÚNICO PARA TURMAS ──
+        function gerarTurmaId() {
+            return 'turma_' + Math.random().toString(36).substring(2,10);
+        }
+
         // ── ADICIONAR NOVO HORÁRIO ──
         async function adicionarSlot() {
-            const data = document.getElementById('novo-data').value;
-            const hora = document.getElementById('novo-horario').value;
+            const data    = document.getElementById('novo-data').value;
+            const hora    = document.getElementById('novo-horario').value;
+            const servico = document.getElementById('novo-servico').value;
             if (!data || !hora) { mostrarToast('Preencha data e horário'); return; }
 
-            const horaFormatada = hora; // já vem como HH:MM
-            dadosAtuais.slots.push({ dataISO: data, horario: horaFormatada, ocupado: false });
-            await salvarDados();
-            renderizarTudo();
-            mostrarToast('Horário adicionado!');
+            if (servico === 'Alma Soma') {
+                // Cria 7 sábados consecutivos a partir da data informada
+                const vagas = parseInt(document.getElementById('novo-vagas').value) || 8;
+                const turmaId = gerarTurmaId();
+                const dataBase = new Date(data + 'T00:00:00');
+
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(dataBase);
+                    d.setDate(dataBase.getDate() + (i * 7));
+                    const dataISO = d.toISOString().split('T')[0];
+                    dadosAtuais.slots.push({
+                        dataISO, horario: hora,
+                        tipo: 'grupo',
+                        servico: 'Alma Soma',
+                        turmaId,
+                        sessaoNum: i + 1,
+                        vagasTotal: vagas,
+                        inscritos: []
+                    });
+                }
+                await salvarDados();
+                renderizarTudo();
+                mostrarToast('Turma de Alma Soma criada — 7 sábados adicionados!');
+            } else {
+                // Horário individual normal
+                dadosAtuais.slots.push({
+                    dataISO: data,
+                    horario: hora,
+                    servico: servico || null,
+                    ocupado: false
+                });
+                await salvarDados();
+                renderizarTudo();
+                mostrarToast('Horário adicionado!');
+            }
+
             document.getElementById('novo-data').value = '';
             document.getElementById('novo-horario').value = '';
+            document.getElementById('novo-servico').value = '';
+            atualizarFormSlot();
         }
 
         // ── REMOVER HORÁRIO (livre, sem cliente) ──
-        async function removerSlot(dataISO, horario) {
-            if (!confirm('Remover este horário da agenda?')) return;
-            dadosAtuais.slots = dadosAtuais.slots.filter(s => !(s.dataISO === dataISO && s.horario === horario));
+        async function removerSlot(dataISO, horario, turmaId) {
+            if (turmaId) {
+                if (!confirm('Remover esta turma de Alma Soma? Todos os 7 sábados serão removidos.')) return;
+                dadosAtuais.slots = dadosAtuais.slots.filter(s => s.turmaId !== turmaId);
+                mostrarToast('Turma de Alma Soma removida');
+            } else {
+                if (!confirm('Remover este horário da agenda?')) return;
+                dadosAtuais.slots = dadosAtuais.slots.filter(s => !(s.dataISO === dataISO && s.horario === horario));
+                mostrarToast('Horário removido');
+            }
             await salvarDados();
             renderizarTudo();
-            mostrarToast('Horário removido');
         }
 
-        // ── CANCELAR AGENDAMENTO (libera o horário de volta para a agenda pública) ──
-        async function cancelarAgendamento(dataISO, horario) {
-            if (!confirm('Cancelar este agendamento? O horário ficará disponível novamente para outras clientes.')) return;
-
-            dadosAtuais.slots = dadosAtuais.slots.map(s => {
-                if (s.dataISO === dataISO && s.horario === horario) {
-                    // Remove os dados da cliente e libera o horário
-                    return { dataISO: s.dataISO, horario: s.horario, ocupado: false };
-                }
-                return s;
-            });
-
+        // ── CANCELAR AGENDAMENTO ──
+        async function cancelarAgendamento(dataISO, horario, turmaId, token) {
+            if (turmaId && token) {
+                // Cancela inscrição de um participante em todos os 7 sábados da turma
+                if (!confirm('Remover este participante da turma de Alma Soma? Ele será removido de todas as 7 sessões.')) return;
+                dadosAtuais.slots = dadosAtuais.slots.map(s => {
+                    if (s.turmaId === turmaId) {
+                        return { ...s, inscritos: (s.inscritos || []).filter(i => i.token !== token) };
+                    }
+                    return s;
+                });
+                mostrarToast('Participante removido da turma');
+            } else {
+                // Cancelamento individual normal
+                if (!confirm('Cancelar este agendamento? O horário ficará disponível novamente para outras clientes.')) return;
+                dadosAtuais.slots = dadosAtuais.slots.map(s => {
+                    if (s.dataISO === dataISO && s.horario === horario) {
+                        return { dataISO: s.dataISO, horario: s.horario, servico: s.servico, ocupado: false };
+                    }
+                    return s;
+                });
+                mostrarToast('Agendamento cancelado — horário liberado novamente');
+            }
             await salvarDados();
             renderizarTudo();
-            mostrarToast('Agendamento cancelado — horário liberado novamente');
         }
 
         // ── CALENDÁRIO ──
@@ -309,14 +393,16 @@
             renderizarAgendamentosDoDia();
         }
 
-        // Na primeira carga, abre o calendário já no mês do próximo agendamento
         function definirEstadoInicialCalendario() {
             const hojeISO = new Date().toISOString().split('T')[0];
-            const diasComAgendamento = [...new Set((dadosAtuais.slots || []).filter(s => s.ocupado).map(s => s.dataISO))].sort();
+            const diasComAtividade = [...new Set((dadosAtuais.slots || []).filter(s => {
+                if (s.tipo === 'grupo') return (s.inscritos || []).length > 0;
+                return s.ocupado;
+            }).map(s => s.dataISO))].sort();
 
             let diaEscolhido = null;
-            if (diasComAgendamento.includes(hojeISO)) diaEscolhido = hojeISO;
-            else diaEscolhido = diasComAgendamento.find(d => d >= hojeISO) || diasComAgendamento[0] || null;
+            if (diasComAtividade.includes(hojeISO)) diaEscolhido = hojeISO;
+            else diaEscolhido = diasComAtividade.find(d => d >= hojeISO) || diasComAtividade[0] || null;
 
             if (diaEscolhido) {
                 const [ano, mes] = diaEscolhido.split('-').map(Number);
@@ -329,19 +415,19 @@
         function renderizarCalendario() {
             document.getElementById('calendar-mes-label').textContent = `${MESES_NOME[calMes]} de ${calAno}`;
 
+            // Inclui dias de turmas de grupo (mesmo com 0 inscritos = planejado) e individuais ocupados
             const diasComAgendamento = new Set(
-                (dadosAtuais.slots || []).filter(s => s.ocupado).map(s => s.dataISO)
+                (dadosAtuais.slots || []).filter(s => {
+                    if (s.tipo === 'grupo') return (s.inscritos || []).length > 0;
+                    return s.ocupado;
+                }).map(s => s.dataISO)
             );
             const hojeISO = new Date().toISOString().split('T')[0];
             const primeiroDiaSemana = new Date(calAno, calMes, 1).getDay();
             const totalDias = new Date(calAno, calMes + 1, 0).getDate();
 
             let html = DIAS_SEMANA.map(d => `<div class="calendar-weekday">${d}</div>`).join('');
-
-            for (let i = 0; i < primeiroDiaSemana; i++) {
-                html += `<div class="calendar-day empty"></div>`;
-            }
-
+            for (let i = 0; i < primeiroDiaSemana; i++) html += `<div class="calendar-day empty"></div>`;
             for (let dia = 1; dia <= totalDias; dia++) {
                 const dataISO = `${calAno}-${pad(calMes+1)}-${pad(dia)}`;
                 const temAgendamento = diasComAgendamento.has(dataISO);
@@ -354,43 +440,65 @@
                         ${temAgendamento ? '<div class="dot"></div>' : ''}
                     </div>`;
             }
-
             document.getElementById('calendar-grid').innerHTML = html;
         }
 
         function renderizarAgendamentosDoDia() {
             const bookingsList = document.getElementById('bookings-list');
-
             if (!diaSelecionado) {
                 bookingsList.innerHTML = '<div class="empty-msg">Selecione um dia marcado no calendário para ver os agendamentos.</div>';
                 return;
             }
 
-            const bookingsDoDia = (dadosAtuais.slots || [])
-                .filter(s => s.ocupado && s.dataISO === diaSelecionado)
+            const slotsDoDia = (dadosAtuais.slots || [])
+                .filter(s => s.dataISO === diaSelecionado && (s.tipo === 'grupo' ? (s.inscritos||[]).length > 0 : s.ocupado))
                 .sort((a,b) => a.horario.localeCompare(b.horario));
 
-            if (bookingsDoDia.length === 0) {
+            if (slotsDoDia.length === 0) {
                 const dataFmt = new Date(diaSelecionado+'T00:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
                 bookingsList.innerHTML = `<div class="empty-msg">Nenhuma cliente agendada em ${dataFmt}.</div>`;
                 return;
             }
 
-            bookingsList.innerHTML = bookingsDoDia.map(b => {
-                const telLimpo = (b.telefone || '').replace(/\D/g,'');
+            bookingsList.innerHTML = slotsDoDia.map(s => {
+                if (s.tipo === 'grupo') {
+                    // Card de turma de Alma Soma com lista de inscritos
+                    const inscritos = s.inscritos || [];
+                    const inscritosHtml = inscritos.map(i => {
+                        const telLimpo = (i.telefone || '').replace(/\D/g,'');
+                        return `<div class="inscrito-item">
+                            <span><strong>${i.nome || 'Sem nome'}</strong>${i.nascimento ? ' · ' + new Date(i.nascimento+'T00:00:00').toLocaleDateString('pt-BR') : ''}</span>
+                            <span style="display:flex; gap:8px; align-items:center;">
+                                ${telLimpo ? `<a href="https://wa.me/55${telLimpo}" target="_blank"><i class="bi bi-whatsapp"></i> ${i.telefone}</a>` : ''}
+                                <button class="btn-cancel-booking" style="padding:3px 8px; font-size:0.72rem;" onclick="cancelarAgendamento('','','${s.turmaId}','${i.token}')">Remover</button>
+                            </span>
+                        </div>`;
+                    }).join('');
+                    return `
+                        <div class="booking-card">
+                            <div class="booking-card-top">
+                                <strong>Alma Soma — Sessão ${s.sessaoNum}/7</strong>
+                                <span class="booking-date">${s.horario} · ${inscritos.length}/${s.vagasTotal} vagas</span>
+                            </div>
+                            ${inscritosHtml}
+                        </div>`;
+                }
+
+                // Card individual normal
+                const telLimpo = (s.telefone || '').replace(/\D/g,'');
                 return `
                     <div class="booking-card">
                         <div class="booking-card-top">
-                            <strong>${b.cliente || 'Sem nome'}</strong>
-                            <span class="booking-date">${b.horario}</span>
+                            <strong>${s.cliente || 'Sem nome'}</strong>
+                            <span class="booking-date">${s.horario}</span>
                         </div>
                         <div class="booking-card-bottom">
-                            <span><i class="bi bi-stars"></i> ${b.servico || '—'}</span>
-                            ${b.modalidade ? `<span><i class="bi ${b.modalidade === 'Presencial' ? 'bi-geo-alt' : 'bi-laptop'}"></i> ${b.modalidade}</span>` : ''}
-                            ${b.nascimento ? `<span><i class="bi bi-cake2"></i> ${new Date(b.nascimento+'T00:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
-                            ${telLimpo ? `<a href="https://wa.me/55${telLimpo}" target="_blank"><i class="bi bi-whatsapp"></i> ${b.telefone}</a>` : ''}
+                            <span><i class="bi bi-stars"></i> ${s.servico || '—'}</span>
+                            ${s.modalidade ? `<span><i class="bi ${s.modalidade === 'Presencial' ? 'bi-geo-alt' : 'bi-laptop'}"></i> ${s.modalidade}</span>` : ''}
+                            ${s.nascimento ? `<span><i class="bi bi-cake2"></i> ${new Date(s.nascimento+'T00:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
+                            ${telLimpo ? `<a href="https://wa.me/55${telLimpo}" target="_blank"><i class="bi bi-whatsapp"></i> ${s.telefone}</a>` : ''}
                         </div>
-                        <button class="btn-cancel-booking" onclick="cancelarAgendamento('${b.dataISO}','${b.horario}')">
+                        <button class="btn-cancel-booking" onclick="cancelarAgendamento('${s.dataISO}','${s.horario}')">
                             <i class="bi bi-x-circle"></i> Cancelar agendamento
                         </button>
                     </div>`;
@@ -401,18 +509,37 @@
         function renderizarTudo() {
             const slots = [...dadosAtuais.slots].sort((a,b) => new Date(a.dataISO+'T'+a.horario) - new Date(b.dataISO+'T'+b.horario));
 
-            // Lista de horários (livres + ocupados)
+            // Lista de horários — grupo: mostra só sessão 1; individuais: mostra todos
             const slotsList = document.getElementById('slots-list');
-            if (slots.length === 0) {
+            const slotsVisiveis = slots.filter(s => s.tipo !== 'grupo' || s.sessaoNum === 1);
+
+            if (slotsVisiveis.length === 0) {
                 slotsList.innerHTML = '<div class="empty-msg">Nenhum horário cadastrado ainda.</div>';
             } else {
-                slotsList.innerHTML = slots.map(s => {
+                slotsList.innerHTML = slotsVisiveis.map(s => {
                     const dataFmt = new Date(s.dataISO+'T00:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'short', weekday:'short' });
+
+                    if (s.tipo === 'grupo') {
+                        const inscritos = s.inscritos || [];
+                        const lotado = inscritos.length >= s.vagasTotal;
+                        return `
+                            <div class="slot-row">
+                                <div class="slot-row-info">
+                                    <strong>${dataFmt} às ${s.horario} — Alma Soma</strong>
+                                    <span class="slot-badge grupo">Grupo · 7 semanas</span>
+                                </div>
+                                <span class="vagas-badge ${lotado ? 'lotado' : ''}">${inscritos.length}/${s.vagasTotal} vagas</span>
+                                ${inscritos.length === 0 ? `<button class="btn-remove" onclick="removerSlot('${s.dataISO}','${s.horario}','${s.turmaId}')"><i class="bi bi-trash"></i></button>` : ''}
+                            </div>`;
+                    }
+
+                    const badge = s.ocupado ? 'ocupado' : 'livre';
+                    const label = s.ocupado ? `Ocupado${s.servico ? ' · ' + s.servico : ''}` : `Livre${s.servico ? ' · ' + s.servico : ''}`;
                     return `
                         <div class="slot-row ${s.ocupado ? 'ocupado' : ''}">
                             <div class="slot-row-info">
                                 <strong>${dataFmt} às ${s.horario}</strong>
-                                <span class="slot-badge ${s.ocupado ? 'ocupado' : 'livre'}">${s.ocupado ? 'Ocupado' : 'Livre'}</span>
+                                <span class="slot-badge ${badge}">${label}</span>
                             </div>
                             ${!s.ocupado ? `<button class="btn-remove" onclick="removerSlot('${s.dataISO}','${s.horario}')"><i class="bi bi-trash"></i></button>` : ''}
                         </div>`;
