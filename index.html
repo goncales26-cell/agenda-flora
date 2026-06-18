@@ -324,9 +324,24 @@
 
         function renderizarSlots() {
             const container = document.getElementById('slots-container');
-            const slots = (dadosAtuais.slots || []).filter(s => !s.ocupado);
+            const todos = dadosAtuais.slots || [];
 
-            if (slots.length === 0) {
+            // Slots individuais disponíveis (não ocupados)
+            const individuais = todos.filter(s => s.tipo !== 'grupo' && !s.ocupado);
+
+            // Slots de Alma Soma: mostra só sessão 1 de cada turma
+            const turmasVistas = new Set();
+            const grupais = todos.filter(s => {
+                if (s.tipo !== 'grupo' || s.sessaoNum !== 1) return false;
+                if (turmasVistas.has(s.turmaId)) return false;
+                turmasVistas.add(s.turmaId);
+                return true;
+            });
+
+            const slotsVisiveis = [...individuais, ...grupais]
+                .sort((a,b) => new Date(a.dataISO+'T'+a.horario) - new Date(b.dataISO+'T'+b.horario));
+
+            if (slotsVisiveis.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="bi bi-calendar-x"></i>
@@ -335,15 +350,54 @@
                 return;
             }
 
-            // Ordena por data
-            slots.sort((a,b) => new Date(a.dataISO) - new Date(b.dataISO));
-
-            container.innerHTML = slots.map(slot => {
+            container.innerHTML = slotsVisiveis.map(slot => {
                 const data = new Date(slot.dataISO + 'T00:00:00');
                 const dia  = data.getDate();
                 const mes  = MESES[data.getMonth()];
                 const diaSemana = data.toLocaleDateString('pt-BR', { weekday: 'long' });
 
+                if (slot.tipo === 'grupo') {
+                    const inscritos = slot.inscritos || [];
+                    const vagasRestantes = slot.vagasTotal - inscritos.length;
+                    const lotado = vagasRestantes <= 0;
+
+                    if (lotado) {
+                        return `
+                            <div class="slot-card" style="opacity:0.6; cursor:default; pointer-events:none;">
+                                <div class="slot-info">
+                                    <div class="slot-date-badge" style="background:rgba(181,69,60,0.08);">
+                                        <span class="day">${dia}</span>
+                                        <span class="month">${mes}</span>
+                                    </div>
+                                    <div class="slot-text">
+                                        <strong>Alma Soma · 7 semanas</strong>
+                                        <span>${slot.horario} · Sábados · 1h30</span>
+                                        <span style="color:#B5453C; font-size:0.78rem; font-weight:600;">Turma lotada</span>
+                                    </div>
+                                </div>
+                                <i class="bi bi-x-circle" style="color:#B5453C;"></i>
+                            </div>`;
+                    }
+
+                    return `
+                        <div class="slot-card" onclick='abrirModal(${JSON.stringify(slot)})'>
+                            <div class="slot-info">
+                                <div class="slot-date-badge">
+                                    <span class="day">${dia}</span>
+                                    <span class="month">${mes}</span>
+                                </div>
+                                <div class="slot-text">
+                                    <strong>Alma Soma · 7 semanas</strong>
+                                    <span>${slot.horario} · Todo sábado · 1h30</span>
+                                    <span style="color:var(--moss); font-size:0.78rem; font-weight:600;">${vagasRestantes} vaga${vagasRestantes > 1 ? 's' : ''} disponível${vagasRestantes > 1 ? 'is' : ''}</span>
+                                </div>
+                            </div>
+                            <i class="bi bi-arrow-right slot-arrow"></i>
+                        </div>`;
+                }
+
+                // Card individual normal
+                const labelServico = slot.servico ? `<span style="color:var(--moss); font-size:0.78rem;">${slot.servico}</span>` : '';
                 return `
                     <div class="slot-card" onclick='abrirModal(${JSON.stringify(slot)})'>
                         <div class="slot-info">
@@ -354,6 +408,7 @@
                             <div class="slot-text">
                                 <strong>${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}</strong>
                                 <span>${slot.horario}</span>
+                                ${labelServico}
                             </div>
                         </div>
                         <i class="bi bi-arrow-right slot-arrow"></i>
@@ -366,17 +421,22 @@
             slotEscolhido = slot;
             const data = new Date(slot.dataISO + 'T00:00:00');
             const dataFormatada = data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', weekday: 'long' });
+            const isGrupo = slot.tipo === 'grupo';
+            const resumo = isGrupo
+                ? `Alma Soma · 7 sábados a partir de ${dataFormatada} às ${slot.horario}`
+                : `${dataFormatada} às ${slot.horario}`;
 
             const box = document.getElementById('modal-box');
             box.innerHTML = `
                 <h3>Confirmar agendamento</h3>
                 <div class="modal-summary">
-                    <i class="bi bi-calendar-event"></i> ${dataFormatada} às ${slot.horario}
+                    <i class="bi bi-calendar-event"></i> ${resumo}
                 </div>
+                ${!isGrupo ? `
                 <div class="form-group">
                     <label>Atendimento desejado</label>
                     <select id="f-servico">
-                        ${SERVICOS.map(s => `<option value="${s}">${s}</option>`).join('')}
+                        ${SERVICOS.filter(s => s !== 'Alma Soma').map(s => `<option value="${s}">${s}</option>`).join('')}
                     </select>
                 </div>
                 <div class="form-group" id="f-modalidade-group" style="display:none;">
@@ -385,7 +445,7 @@
                         <option value="Presencial">Presencial</option>
                         <option value="À Distância">À Distância</option>
                     </select>
-                </div>
+                </div>` : ''}
                 <div class="form-group">
                     <label>Seu nome</label>
                     <input type="text" id="f-nome" placeholder="Nome completo">
@@ -406,14 +466,16 @@
             `;
             document.getElementById('modal-overlay').classList.add('open');
 
-            // Modalidade (Presencial/À Distância) — visível só para Reiki por enquanto
-            const servicoSelect    = document.getElementById('f-servico');
-            const modalidadeGrupo  = document.getElementById('f-modalidade-group');
-            function atualizarModalidade() {
-                modalidadeGrupo.style.display = (servicoSelect.value === 'Reiki') ? 'block' : 'none';
+            // Modalidade (Presencial/À Distância) — visível só para Reiki, não aparece no grupo
+            if (!isGrupo) {
+                const servicoSelect   = document.getElementById('f-servico');
+                const modalidadeGrupo = document.getElementById('f-modalidade-group');
+                function atualizarModalidade() {
+                    modalidadeGrupo.style.display = (servicoSelect.value === 'Reiki') ? 'block' : 'none';
+                }
+                atualizarModalidade();
+                servicoSelect.addEventListener('change', atualizarModalidade);
             }
-            atualizarModalidade();
-            servicoSelect.addEventListener('change', atualizarModalidade);
 
             // Máscara de telefone
             document.getElementById('f-tel').addEventListener('input', function(e) {
@@ -433,8 +495,9 @@
 
         // ── CONFIRMA E SALVA AGENDAMENTO ──
         async function confirmarAgendamento() {
-            const servico    = document.getElementById('f-servico').value;
-            const modalidade = (servico === 'Reiki') ? document.getElementById('f-modalidade').value : null;
+            const isGrupo    = slotEscolhido.tipo === 'grupo';
+            const servico    = isGrupo ? 'Alma Soma' : document.getElementById('f-servico').value;
+            const modalidade = (!isGrupo && servico === 'Reiki') ? document.getElementById('f-modalidade').value : null;
             const nome       = document.getElementById('f-nome').value.trim();
             const nascimento = document.getElementById('f-nascimento').value;
             const tel        = document.getElementById('f-tel').value.trim();
@@ -453,22 +516,32 @@
             tokenGerado = gerarToken();
 
             try {
-                // Marca o slot como ocupado
-                const slots = dadosAtuais.slots.map(s => {
-                    if (s.dataISO === slotEscolhido.dataISO && s.horario === slotEscolhido.horario) {
-                        return { ...s, ocupado: true, cliente: nome, telefone: tel, servico: servico, nascimento: nascimento, modalidade: modalidade, token: tokenGerado };
-                    }
-                    return s;
-                });
+                let slots;
+
+                if (isGrupo) {
+                    // Inscreve o participante em todos os 7 slots da turma
+                    const inscrito = { nome, telefone: tel, nascimento, token: tokenGerado };
+                    slots = dadosAtuais.slots.map(s => {
+                        if (s.turmaId === slotEscolhido.turmaId) {
+                            return { ...s, inscritos: [...(s.inscritos || []), inscrito] };
+                        }
+                        return s;
+                    });
+                } else {
+                    // Reserva individual normal
+                    slots = dadosAtuais.slots.map(s => {
+                        if (s.dataISO === slotEscolhido.dataISO && s.horario === slotEscolhido.horario) {
+                            return { ...s, ocupado: true, cliente: nome, telefone: tel, servico, nascimento, modalidade, token: tokenGerado };
+                        }
+                        return s;
+                    });
+                }
 
                 const novoEstado = { ...dadosAtuais, slots };
 
                 await fetch(JSONBIN_URL, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_KEY
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
                     body: JSON.stringify(novoEstado)
                 });
 
@@ -482,9 +555,11 @@
                         body: JSON.stringify({
                             cliente: nome,
                             telefone: tel,
-                            servico: servico,
-                            modalidade: modalidade,
-                            nascimento: nascimento,
+                            servico,
+                            modalidade,
+                            nascimento,
+                            tipo: isGrupo ? 'grupo' : 'individual',
+                            turmaId: isGrupo ? slotEscolhido.turmaId : null,
                             data: slotEscolhido.dataISO,
                             horario: slotEscolhido.horario
                         })
@@ -503,19 +578,21 @@
         }
 
         function mostrarSucesso() {
+            const isGrupo = slotEscolhido.tipo === 'grupo';
             const data = new Date(slotEscolhido.dataISO + 'T00:00:00');
             const dataFormatada = data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
             const linkCancelamento = `${window.location.origin}${window.location.pathname}?cancelar=${tokenGerado}`;
+
+            const mensagem = isGrupo
+                ? `Você está inscrita na turma de Alma Soma com início em <strong>${dataFormatada} às ${slotEscolhido.horario}</strong>. Os 7 sábados estão reservados para você. A Flora entrará em contato com os detalhes.`
+                : `Seu atendimento está marcado para <strong>${dataFormatada} às ${slotEscolhido.horario}</strong>. A Flora foi avisada e qualquer detalhe ela combina direto com você.`;
 
             const box = document.getElementById('modal-box');
             box.innerHTML = `
                 <div style="text-align:center;">
                     <div class="success-icon"><i class="bi bi-check-lg"></i></div>
-                    <h3 style="margin-bottom:10px;">Agendamento confirmado!</h3>
-                    <p style="color:var(--muted); font-size:0.92rem; margin-bottom:20px;">
-                        Seu atendimento está marcado para <strong>${dataFormatada} às ${slotEscolhido.horario}</strong>.
-                        A Flora foi avisada e qualquer detalhe ela combina direto com você.
-                    </p>
+                    <h3 style="margin-bottom:10px;">${isGrupo ? 'Inscrição confirmada!' : 'Agendamento confirmado!'}</h3>
+                    <p style="color:var(--muted); font-size:0.92rem; margin-bottom:20px;">${mensagem}</p>
                     <p style="color:var(--muted); font-size:0.8rem; margin-bottom:8px;">Precisar cancelar depois? Guarde este link:</p>
                     <div style="background:var(--sand); border-radius:8px; padding:10px 12px; font-size:0.76rem; word-break:break-all; margin-bottom:20px; color:var(--clay-dk);">
                         ${linkCancelamento}
@@ -572,16 +649,30 @@
                 return;
             }
 
-            const encontrados = (dadosAtuais.slots || []).filter(s =>
-                s.ocupado && (s.telefone || '').replace(/\D/g,'') === telDigitado
+            // Busca individuais
+            const individuais = (dadosAtuais.slots || []).filter(s =>
+                !s.tipo && s.ocupado && (s.telefone || '').replace(/\D/g,'') === telDigitado
             );
 
-            if (encontrados.length === 0) {
+            // Busca em turmas de grupo (sessao 1 apenas para não mostrar 7x)
+            const grupos = [];
+            const turmasVistas = new Set();
+            (dadosAtuais.slots || []).forEach(s => {
+                if (s.tipo === 'grupo' && s.sessaoNum === 1 && !turmasVistas.has(s.turmaId)) {
+                    const inscrito = (s.inscritos || []).find(i => (i.telefone||'').replace(/\D/g,'') === telDigitado);
+                    if (inscrito) {
+                        turmasVistas.add(s.turmaId);
+                        grupos.push({ slot: s, inscrito });
+                    }
+                }
+            });
+
+            if (individuais.length === 0 && grupos.length === 0) {
                 resultados.innerHTML = `<p style="color:var(--muted); font-size:0.86rem; margin-top:14px;">Nenhum agendamento encontrado com esse número.</p>`;
                 return;
             }
 
-            resultados.innerHTML = encontrados.map(s => {
+            const htmlIndividuais = individuais.map(s => {
                 const data = new Date(s.dataISO + 'T00:00:00');
                 const dataFormatada = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
                 return `
@@ -592,7 +683,22 @@
                             <i class="bi bi-x-circle"></i> Cancelar este agendamento
                         </button>
                     </div>`;
-            }).join('');
+            });
+
+            const htmlGrupos = grupos.map(({ slot, inscrito }) => {
+                const data = new Date(slot.dataISO + 'T00:00:00');
+                const dataFormatada = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+                return `
+                    <div style="background:var(--sand); border-radius:8px; padding:12px 14px; margin-top:12px; font-size:0.88rem;">
+                        <strong>Alma Soma · 7 semanas</strong> — a partir de ${dataFormatada} às ${slot.horario}
+                        <button class="btn-cancel" style="width:100%; margin-top:10px; border-color:#B5453C; color:#B5453C;"
+                            onclick='mostrarConfirmacaoCancelamentoGrupo(${JSON.stringify(slot)}, "${inscrito.token}")'>
+                            <i class="bi bi-x-circle"></i> Cancelar inscrição na turma
+                        </button>
+                    </div>`;
+            });
+
+            resultados.innerHTML = [...htmlIndividuais, ...htmlGrupos].join('');
         }
 
         // Tela de confirmação final, usada tanto pela busca quanto pelo link direto
@@ -649,18 +755,76 @@
             }
         }
 
-        // Verifica se a página foi aberta por um link de cancelamento (?cancelar=TOKEN)
+        // Confirmação de cancelamento de inscrição em turma (pelo cliente)
+        function mostrarConfirmacaoCancelamentoGrupo(slot, token) {
+            const data = new Date(slot.dataISO + 'T00:00:00');
+            const dataFormatada = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+            const box = document.getElementById('modal-box');
+            box.innerHTML = `
+                <h3>Confirmar cancelamento</h3>
+                <div class="modal-summary">
+                    <i class="bi bi-calendar-event"></i> Alma Soma · 7 semanas a partir de ${dataFormatada} às ${slot.horario}
+                </div>
+                <p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px;">Tem certeza que deseja cancelar sua inscrição? Você será removida de todas as 7 sessões.</p>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="fecharModal()">Voltar</button>
+                    <button class="btn-confirm" style="background:#B5453C;" onclick="executarCancelamentoGrupoCliente('${slot.turmaId}','${token}')">Sim, cancelar</button>
+                </div>
+            `;
+            document.getElementById('modal-overlay').classList.add('open');
+        }
+
+        // Executa o cancelamento de inscrição em grupo pelo cliente
+        async function executarCancelamentoGrupoCliente(turmaId, token) {
+            try {
+                const slots = dadosAtuais.slots.map(s => {
+                    if (s.turmaId === turmaId) {
+                        return { ...s, inscritos: (s.inscritos || []).filter(i => i.token !== token) };
+                    }
+                    return s;
+                });
+                const novoEstado = { ...dadosAtuais, slots };
+                await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+                    body: JSON.stringify(novoEstado)
+                });
+                dadosAtuais = novoEstado;
+                renderizarSlots();
+                const box = document.getElementById('modal-box');
+                box.innerHTML = `
+                    <div style="text-align:center;">
+                        <div class="success-icon" style="background:#B5453C;"><i class="bi bi-check-lg"></i></div>
+                        <h3 style="margin-bottom:10px;">Inscrição cancelada</h3>
+                        <p style="color:var(--muted); font-size:0.92rem; margin-bottom:24px;">Sua inscrição na turma de Alma Soma foi cancelada.</p>
+                        <button class="btn-confirm" style="width:100%;" onclick="fecharModal()">Fechar</button>
+                    </div>`;
+            } catch (e) {
+                alert('Erro ao cancelar. Tente novamente ou chame no WhatsApp.');
+            }
+        }
+
+        // Verifica link de cancelamento na URL (individual ou grupo)
         function verificarLinkCancelamento() {
             const params = new URLSearchParams(window.location.search);
             const token = params.get('cancelar');
             if (!token || !dadosAtuais) return;
 
-            const slot = (dadosAtuais.slots || []).find(s => s.token === token && s.ocupado);
-            if (!slot) {
-                alert('Este link de cancelamento não é mais válido — talvez o agendamento já tenha sido cancelado.');
-                return;
+            // Tenta individual primeiro
+            const slotIndividual = (dadosAtuais.slots || []).find(s => s.token === token && s.ocupado);
+            if (slotIndividual) { mostrarConfirmacaoCancelamento(slotIndividual); return; }
+
+            // Tenta grupo (procura o token entre os inscritos da sessão 1)
+            let slotGrupo = null;
+            for (const s of (dadosAtuais.slots || [])) {
+                if (s.tipo === 'grupo' && s.sessaoNum === 1) {
+                    const inscrito = (s.inscritos || []).find(i => i.token === token);
+                    if (inscrito) { slotGrupo = s; break; }
+                }
             }
-            mostrarConfirmacaoCancelamento(slot);
+            if (slotGrupo) { mostrarConfirmacaoCancelamentoGrupo(slotGrupo, token); return; }
+
+            alert('Este link de cancelamento não é mais válido — talvez já tenha sido cancelado.');
         }
 
         carregarHorarios().then(verificarLinkCancelamento);
