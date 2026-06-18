@@ -298,6 +298,7 @@
                             </div>
                             <div class="booking-card-bottom">
                                 <span><i class="bi bi-stars"></i> ${b.servico || '—'}</span>
+                                ${b.modalidade ? `<span><i class="bi ${b.modalidade === 'Presencial' ? 'bi-geo-alt' : 'bi-laptop'}"></i> ${b.modalidade}</span>` : ''}
                                 ${b.nascimento ? `<span><i class="bi bi-cake2"></i> ${new Date(b.nascimento+'T00:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
                                 ${telLimpo ? `<a href="https://wa.me/55${telLimpo}" target="_blank"><i class="bi bi-whatsapp"></i> ${b.telefone}</a>` : ''}
                             </div>
