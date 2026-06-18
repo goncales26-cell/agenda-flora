@@ -1,197 +1,833 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
     <meta name="format-detection" content="telephone=no">
-    <title>Como usar sua Agenda | Flora Macêdo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Flora Macedo | Agende seu Atendimento</title>
+    <meta name="description" content="Flora Macedo — Reiki, Alma Soma, Tarô, Baralho Cigano e Mesa Radiônica. Agende seu horário.">
+
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <style>
         :root {
-            --clay: #1F4D33; --clay-dk: #143524; --sand: #E9EDE1;
-            --bone: #F7F6F0; --ink: #1C2A20; --moss: #B8924A;
-            --muted: #6F7D6A; --line: #D9DECB;
+            --clay:    #1F4D33;
+            --clay-dk: #143524;
+            --sand:    #E9EDE1;
+            --bone:    #F7F6F0;
+            --ink:     #1C2A20;
+            --moss:    #B8924A;
+            --muted:   #6F7D6A;
+            --line:    #D9DECB;
         }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; max-width: 100%; overflow-x: hidden; }
-        body { background: var(--bone); color: var(--ink); font-family:'Inter',sans-serif; line-height:1.7; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; max-width: 100vw; }
 
-        header { background: linear-gradient(165deg, var(--clay), var(--clay-dk)); color: var(--bone); padding: 48px 24px 56px; text-align: center; position: relative; }
-        .btn-voltar-painel { position: absolute; top: 20px; left: 20px; display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); color: var(--bone); padding: 8px 14px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; transition: background 0.2s; }
-        .btn-voltar-painel:hover { background: rgba(255,255,255,0.22); }
-        .logo { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 20px; box-shadow: 0 0 0 1px rgba(184,146,74,0.5), 0 6px 20px rgba(0,0,0,0.2); }
-        header h1 { font-family:'Fraunces',serif; font-weight: 600; font-size: 1.7rem; margin-bottom: 6px; }
-        header p { font-size: 0.9rem; opacity: 0.85; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; max-width: 100%; overflow-x: hidden; }
+        body {
+            background: var(--bone);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+        img, video { max-width: 100%; height: auto; }
+        h1, h2, h3, h4, p, span, a { overflow-wrap: break-word; word-wrap: break-word; }
 
-        main { max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+        /* ── HERO ── */
+        .hero {
+            background: linear-gradient(165deg, var(--clay) 0%, var(--clay-dk) 100%);
+            color: var(--bone);
+            padding: 64px 24px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(247,242,233,0.5) 1px, transparent 1px);
+            background-size: 22px 22px;
+            opacity: 0.12;
+        }
+        .hero-inner { position: relative; max-width: 580px; margin: 0 auto; }
+        .hero-mark {
+            width: 88px; height: 88px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 24px;
+            box-shadow: 0 0 0 1px rgba(184,146,74,0.4), 0 8px 24px rgba(0,0,0,0.25);
+            background: white;
+        }
+        .hero-mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .hero h1 {
+            font-family: 'Fraunces', serif;
+            font-weight: 500;
+            font-size: clamp(2.2rem, 6vw, 3.2rem);
+            letter-spacing: -0.01em;
+            margin-bottom: 8px;
+        }
+        .hero-signature {
+            max-width: 320px;
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 22px;
+            /* Recolore o traço verde da assinatura para o tom creme do resto do texto do hero */
+            filter: brightness(0) invert(1);
+            opacity: 0.92;
+        }
+        .hero p { color: rgba(247,242,233,0.88); font-size: 1.02rem; max-width: 460px; margin: 0 auto; }
 
-        .intro { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 32px; font-size: 0.95rem; color: var(--muted); }
-        .intro strong { color: var(--clay); }
+        /* ── SERVIÇOS (faixa) ── */
+        .services-strip {
+            background: var(--sand);
+            border-bottom: 1px solid var(--line);
+            padding: 22px 24px;
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+        .service-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 0.84rem; color: var(--clay-dk); font-weight: 500;
+        }
+        .service-pill i { font-size: 1rem; }
 
-        .step { background: white; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
-        .step-header { display: flex; align-items: center; gap: 14px; padding: 20px 24px; background: var(--sand); border-bottom: 1px solid var(--line); }
-        .step-num { width: 36px; height: 36px; background: var(--clay); color: var(--bone); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family:'Fraunces',serif; font-weight: 600; font-size: 1.05rem; flex-shrink: 0; }
-        .step-header h2 { font-family:'Fraunces',serif; font-weight: 600; font-size: 1.15rem; }
-        .step-body { padding: 22px 24px; }
-        .step-body p { font-size: 0.93rem; color: var(--ink); margin-bottom: 10px; }
-        .step-body p:last-child { margin-bottom: 0; }
+        /* ── SEÇÃO AGENDA ── */
+        .section { max-width: 640px; margin: 0 auto; padding: 64px 24px; }
+        .section-eyebrow {
+            font-size: 0.78rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--moss);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-family: 'Fraunces', serif;
+            font-weight: 500;
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+        }
+        .section-desc { color: var(--muted); font-size: 0.95rem; margin-bottom: 36px; max-width: 480px; }
 
-        .highlight-box { background: var(--sand); border-left: 3px solid var(--moss); border-radius: 6px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; }
-        .highlight-box strong { color: var(--clay); }
+        /* CARDS DE HORÁRIO */
+        .slots-grid { display: flex; flex-direction: column; gap: 12px; }
+        .slot-card {
+            background: var(--bone);
+            border: 1.5px solid var(--line);
+            border-radius: 10px;
+            padding: 18px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .slot-card:hover { border-color: var(--moss); background: white; box-shadow: 0 6px 20px rgba(31,77,51,0.1); transform: translateY(-2px); }
+        .slot-card.selected { border-color: var(--moss); background: var(--sand); }
+        .slot-info { display: flex; align-items: center; gap: 16px; }
+        .slot-date-badge {
+            background: var(--clay);
+            color: var(--bone);
+            border-radius: 8px;
+            padding: 8px 14px;
+            text-align: center;
+            font-family: 'Fraunces', serif;
+            line-height: 1.1;
+            min-width: 58px;
+            border: 1px solid rgba(184,146,74,0.5);
+        }
+        .slot-date-badge .day { font-size: 1.3rem; font-weight: 600; display: block; }
+        .slot-date-badge .month { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--moss); }
+        .slot-text strong { display: block; font-size: 1rem; color: var(--ink); }
+        .slot-text span { font-size: 0.82rem; color: var(--muted); }
+        .slot-arrow { color: var(--moss); font-size: 1.2rem; transition: transform 0.25s; }
+        .slot-card:hover .slot-arrow { transform: translateX(4px); }
 
-        .link-box { display: flex; align-items: center; gap: 10px; background: var(--clay); color: var(--bone); border-radius: 8px; padding: 14px 18px; font-size: 0.9rem; font-weight: 500; margin: 14px 0; word-break: break-all; }
-        .link-box i { font-size: 1.1rem; flex-shrink: 0; }
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            border: 1.5px dashed var(--line);
+            border-radius: 10px;
+            color: var(--muted);
+        }
+        .empty-state i { font-size: 2rem; color: var(--clay); margin-bottom: 12px; display: block; }
 
-        .tip-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
-        .tip-row i { color: var(--moss); font-size: 1rem; margin-top: 2px; flex-shrink: 0; }
-        .tip-row p { margin-bottom: 0 !important; }
+        /* ── MODAL DE CONFIRMAÇÃO ── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(43,36,32,0.55);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 1000; padding: 24px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: var(--bone);
+            border-radius: 14px;
+            padding: 36px 32px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+        }
+        .modal-box h3 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.4rem; margin-bottom: 6px; }
+        .modal-summary { background: var(--sand); border-radius: 8px; padding: 14px 16px; margin-bottom: 22px; font-size: 0.9rem; color: var(--clay-dk); font-weight: 500; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+        .form-group select, .form-group input {
+            width: 100%; padding: 12px 14px;
+            border: 1.5px solid var(--line); border-radius: 8px;
+            font-size: 0.95rem; font-family: 'Inter', sans-serif;
+            background: white; color: var(--ink);
+            outline: none; transition: border-color 0.2s;
+        }
+        .form-group select:focus, .form-group input:focus { border-color: var(--clay); }
+        .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+        .btn-cancel, .btn-confirm {
+            flex: 1; padding: 13px; border-radius: 8px;
+            font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; border: none; transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-cancel { background: transparent; border: 1.5px solid var(--line); color: var(--muted); }
+        .btn-cancel:hover { background: var(--sand); }
+        .btn-confirm { background: var(--clay); color: var(--bone); }
+        .btn-confirm:hover { background: var(--clay-dk); }
+        .btn-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .faq-item { border-bottom: 1px solid var(--line); padding: 16px 0; }
-        .faq-item:last-child { border-bottom: none; }
-        .faq-q { font-weight: 600; font-size: 0.94rem; color: var(--clay); margin-bottom: 6px; display: flex; gap: 8px; }
-        .faq-a { font-size: 0.9rem; color: var(--muted); }
+        .feedback-msg { font-size: 0.82rem; margin-top: 10px; display: none; }
+        .feedback-msg.error { color: #B5453C; display: block; }
 
-        .section-title { font-family:'Fraunces',serif; font-weight: 600; font-size: 1.4rem; margin: 48px 0 20px; color: var(--clay); }
+        /* TELA DE SUCESSO */
+        .success-icon { width: 56px; height: 56px; background: var(--moss); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; margin: 0 auto 18px; }
 
-        footer { text-align: center; padding: 32px 24px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); }
-        footer a { color: var(--clay); text-decoration: none; font-weight: 600; }
+        /* ── RODAPÉ ── */
+        footer { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--line); }
+        footer a { color: var(--clay-dk); text-decoration: none; font-weight: 600; }
+
+        .loading-state { text-align: center; padding: 40px; color: var(--muted); }
+        .loading-state i { font-size: 1.6rem; color: var(--clay); animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 480px) {
-            .step-header { padding: 16px 20px; }
-            .step-body { padding: 18px 20px; }
-            .btn-voltar-painel { position: static; display: inline-flex; margin-bottom: 16px; }
+            .services-strip { gap: 16px; }
+            .modal-box { padding: 28px 22px; }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <a href="./painel-flora.html" class="btn-voltar-painel"><i class="bi bi-arrow-left"></i> Voltar ao Painel</a>
-        <img src="./logo_flora.png" alt="Flora Macêdo" class="logo">
-        <h1>Como usar sua Agenda</h1>
-        <p>Guia simples para o dia a dia</p>
-    </header>
-
-    <main>
-
-        <div class="intro">
-            Esse é o seu guia rápido para usar a agenda online. Não precisa decorar nada — sempre que tiver dúvida, é só voltar aqui e seguir o passo a passo. <strong>Leva menos de 2 minutos para abrir um novo horário.</strong>
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-mark"><img src="./logo_flora.png" alt="Flora Macêdo"></div>
+            <img src="./assinatura_flora.png" alt="Flora Macedo" class="hero-signature">
+            <p>Escolha um horário disponível abaixo e agende seu atendimento em poucos segundos — sem precisar trocar mensagens.</p>
         </div>
+    </section>
 
-        <div class="step">
-            <div class="step-header">
-                <div class="step-num">1</div>
-                <h2>Entrar no seu painel</h2>
-            </div>
-            <div class="step-body">
-                <p>Acesse este link no seu celular ou computador:</p>
-                <div class="link-box"><i class="bi bi-link-45deg"></i> agenda-flora.vercel.app/painel-flora.html</div>
-                <p>Dica: salve esse link nos favoritos do navegador ou na tela inicial do celular, assim você não precisa digitar de novo.</p>
-                <div class="highlight-box">
-                    <strong>Sua senha:</strong> flora2026
-                </div>
-            </div>
+    <div class="services-strip">
+        <span class="service-pill"><i class="bi bi-sun"></i> Reiki</span>
+        <span class="service-pill"><i class="bi bi-droplet"></i> Alma Soma</span>
+        <span class="service-pill"><i class="bi bi-stars"></i> Tarô</span>
+        <span class="service-pill"><i class="bi bi-flower3"></i> Baralho Cigano</span>
+        <span class="service-pill"><i class="bi bi-circle"></i> Mesa Radiônica</span>
+    </div>
+
+    <section class="section">
+        <div class="section-eyebrow">Agenda Aberta</div>
+        <h2 class="section-title">Horários disponíveis</h2>
+        <p class="section-desc">Selecione o dia e horário que melhor combina com você. Após escolher, é só confirmar seus dados.</p>
+
+        <div id="slots-container" class="slots-grid">
+            <div class="loading-state"><i class="bi bi-arrow-repeat"></i><p style="margin-top:10px;">Carregando horários...</p></div>
         </div>
-
-        <div class="step">
-            <div class="step-header">
-                <div class="step-num">2</div>
-                <h2>Abrir um novo horário</h2>
-            </div>
-            <div class="step-body">
-                <p>Dentro do painel, você vai ver uma caixa chamada <strong>"Abrir novo horário"</strong>. É só:</p>
-                <div class="tip-row"><i class="bi bi-1-circle-fill"></i><p>Escolher a <strong>data</strong> clicando no campo de calendário</p></div>
-                <div class="tip-row"><i class="bi bi-2-circle-fill"></i><p>Escolher o <strong>horário</strong> clicando no campo de hora</p></div>
-                <div class="tip-row"><i class="bi bi-3-circle-fill"></i><p>Clicar no botão verde <strong>"Adicionar"</strong></p></div>
-                <p>Pronto! Esse horário já aparece na sua agenda pública para qualquer cliente agendar.</p>
-            </div>
-        </div>
-
-        <div class="step">
-            <div class="step-header">
-                <div class="step-num">3</div>
-                <h2>Ver quem agendou</h2>
-            </div>
-            <div class="step-body">
-                <p>Mais abaixo no painel tem a seção <strong>"Clientes agendadas"</strong>. Lá aparece o nome, o atendimento escolhido e o WhatsApp de cada pessoa que marcou horário.</p>
-                <div class="highlight-box">
-                    Clique no número de WhatsApp da cliente para já abrir uma conversa direto com ela, se precisar confirmar algum detalhe.
-                </div>
-            </div>
-        </div>
-
-        <div class="step">
-            <div class="step-header">
-                <div class="step-num">4</div>
-                <h2>Remover um horário</h2>
-            </div>
-            <div class="step-body">
-                <p>Se você quiser cancelar um horário que ainda está <strong>livre</strong> (ninguém marcou ainda), basta clicar no ícone da lixeira ao lado dele, na lista de "Horários da semana".</p>
-                <div class="highlight-box">
-                    <strong>Importante:</strong> só é possível remover horários que ainda estão livres. Os que já têm cliente marcada ficam guardados como histórico.
-                </div>
-            </div>
-        </div>
-
-        <div class="step">
-            <div class="step-header">
-                <div class="step-num">5</div>
-                <h2>Cliente desmarcou? Cancele o agendamento</h2>
-            </div>
-            <div class="step-body">
-                <p>Se uma cliente avisar que não vai poder ir, vá até a seção <strong>"Clientes agendadas"</strong> e clique no botão vermelho <strong>"Cancelar agendamento"</strong> no card dela.</p>
-                <div class="highlight-box">
-                    <strong>O que acontece:</strong> o nome e o telefone da cliente são removidos, e aquele horário volta a aparecer como disponível na sua agenda pública — assim outra pessoa já pode marcar no lugar dela.
-                </div>
-            </div>
-        </div>
-
-        <h2 class="section-title">Para enviar às suas clientes</h2>
-
-        <div class="step">
-            <div class="step-body">
-                <p>Esse é o link que você manda para quem quiser agendar um atendimento:</p>
-                <div class="link-box"><i class="bi bi-send"></i> agenda-flora.vercel.app</div>
-                <p>A cliente abre o link, escolhe o atendimento (Reiki, Tarô, etc), escolhe um horário disponível, preenche o nome e o WhatsApp dela, e confirma. Simples assim — sem trocar mensagem com você antes.</p>
-            </div>
-        </div>
-
-        <h2 class="section-title">Perguntas frequentes</h2>
-
-        <div class="step">
-            <div class="step-body">
-                <div class="faq-item">
-                    <div class="faq-q"><i class="bi bi-question-circle"></i> E se eu quiser trocar minha senha?</div>
-                    <div class="faq-a">Por enquanto a senha é fixa no sistema. Se quiser trocar, é só me chamar e eu atualizo para você.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-q"><i class="bi bi-question-circle"></i> A cliente pode agendar um horário duas vezes?</div>
-                    <div class="faq-a">Não. Assim que alguém agenda, aquele horário desaparece da lista pública automaticamente — ninguém mais consegue marcar o mesmo horário.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-q"><i class="bi bi-question-circle"></i> Uma cliente desmarcou, o que eu faço?</div>
-                    <div class="faq-a">Vá em "Clientes agendadas" e clique em "Cancelar agendamento". O horário some da lista de clientes e volta a aparecer como disponível para qualquer pessoa agendar.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-q"><i class="bi bi-question-circle"></i> Posso abrir vários horários de uma vez?</div>
-                    <div class="faq-a">Sim! Repita o passo 2 quantas vezes precisar — um para cada dia e horário que quiser deixar disponível.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-q"><i class="bi bi-question-circle"></i> O que acontece se eu não abrir nenhum horário?</div>
-                    <div class="faq-a">A página mostra a mensagem "Nenhum horário disponível" para quem visitar. Assim que você abrir um horário no painel, ele aparece na hora.</div>
-                </div>
-            </div>
-        </div>
-
-    </main>
+    </section>
 
     <footer>
-        <p>Qualquer dúvida, é só chamar o Flávio</p>
-        <p style="margin-top:4px;"><a href="https://wa.me/5515997571977">Falar no WhatsApp</a></p>
+        <p>Flora Macedo</p>
+        <p style="margin-top:4px;">Dúvidas? <a href="https://wa.me/5515981449021" target="_blank">Fale no WhatsApp</a></p>
+        <div style="margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <a href="javascript:void(0)" onclick="abrirModalCancelamento()"
+               style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.04); color:var(--muted); border:1px solid var(--line); padding:7px 16px; border-radius:20px; font-size:11px; text-decoration:none; transition:all 0.3s; letter-spacing:0.05em;"
+               onmouseover="this.style.color='var(--clay)'; this.style.borderColor='var(--clay)'; this.style.background='rgba(31,77,51,0.06)';"
+               onmouseout="this.style.color='var(--muted)'; this.style.borderColor='var(--line)'; this.style.background='rgba(0,0,0,0.04)';">
+                <i class="bi bi-x-circle"></i> Cancelar agendamento
+            </a>
+            <a href="./painel-flora.html"
+               style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.04); color:var(--muted); border:1px solid var(--line); padding:7px 16px; border-radius:20px; font-size:11px; text-decoration:none; transition:all 0.3s; letter-spacing:0.05em;"
+               onmouseover="this.style.color='var(--clay)'; this.style.borderColor='var(--clay)'; this.style.background='rgba(31,77,51,0.06)';"
+               onmouseout="this.style.color='var(--muted)'; this.style.borderColor='var(--line)'; this.style.background='rgba(0,0,0,0.04)';">
+                <i class="bi bi-gear-fill"></i> Painel da Flora
+            </a>
+        </div>
         <p style="margin-top:14px; font-size:0.74rem; opacity:0.75;">Desenvolvido por <strong style="color:var(--clay);">65.611.420 FLAVIO GONCALES</strong></p>
     </footer>
 
+    <!-- MODAL DE CONFIRMAÇÃO -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-box" id="modal-box">
+            <!-- conteúdo injetado via JS -->
+        </div>
+    </div>
+
+    <script>
+        // ════════════════════════════════════════
+        // CONFIGURAÇÃO — JSONBin
+        // ════════════════════════════════════════
+        const JSONBIN_ID  = '6a31405ff5f4af5e29fae885';
+        const JSONBIN_KEY = '$2a$10$8In7BF0QhgmBKqCO7BgCYeK7GFk7cn/pO3qbcO2wV5dKDzNpbMoMa';
+        const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
+
+        // Webhook do Make — dispara notificação no WhatsApp da Flora
+        const MAKE_WEBHOOK_URL = 'COLOQUE_O_WEBHOOK_DO_MAKE_AQUI';
+
+        const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        const SERVICOS = ['Reiki', 'Alma Soma', 'Tarô', 'Baralho Cigano', 'Mesa Radiônica'];
+
+        let dadosAtuais = null;
+        let slotEscolhido = null;
+        let tokenGerado = null;
+
+        // Gera um código único simples para o link de cancelamento
+        function gerarToken() {
+            return Math.random().toString(36).substring(2, 10) + Date.now().toString(36).substring(4);
+        }
+
+        // ── CARREGA HORÁRIOS DISPONÍVEIS ──
+        async function carregarHorarios() {
+            const container = document.getElementById('slots-container');
+            try {
+                const res = await fetch(JSONBIN_URL + '/latest', {
+                    headers: { 'X-Master-Key': JSONBIN_KEY }
+                });
+                const json = await res.json();
+                dadosAtuais = json.record;
+                renderizarSlots();
+            } catch (e) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <p>Não foi possível carregar a agenda agora.<br>Tente novamente em alguns instantes.</p>
+                    </div>`;
+            }
+        }
+
+        function renderizarSlots() {
+            const container = document.getElementById('slots-container');
+            const todos = dadosAtuais.slots || [];
+
+            // Slots individuais disponíveis (não ocupados)
+            const individuais = todos.filter(s => s.tipo !== 'grupo' && !s.ocupado);
+
+            // Slots de Alma Soma: mostra só sessão 1 de cada turma
+            const turmasVistas = new Set();
+            const grupais = todos.filter(s => {
+                if (s.tipo !== 'grupo' || s.sessaoNum !== 1) return false;
+                if (turmasVistas.has(s.turmaId)) return false;
+                turmasVistas.add(s.turmaId);
+                return true;
+            });
+
+            const slotsVisiveis = [...individuais, ...grupais]
+                .sort((a,b) => new Date(a.dataISO+'T'+a.horario) - new Date(b.dataISO+'T'+b.horario));
+
+            if (slotsVisiveis.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-x"></i>
+                        <p>Nenhum horário disponível no momento.<br>Volte em breve ou fale direto no WhatsApp.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = slotsVisiveis.map(slot => {
+                const data = new Date(slot.dataISO + 'T00:00:00');
+                const dia  = data.getDate();
+                const mes  = MESES[data.getMonth()];
+                const diaSemana = data.toLocaleDateString('pt-BR', { weekday: 'long' });
+
+                if (slot.tipo === 'grupo') {
+                    const inscritos = slot.inscritos || [];
+                    const vagasRestantes = slot.vagasTotal - inscritos.length;
+                    const lotado = vagasRestantes <= 0;
+
+                    if (lotado) {
+                        return `
+                            <div class="slot-card" style="opacity:0.6; cursor:default; pointer-events:none;">
+                                <div class="slot-info">
+                                    <div class="slot-date-badge" style="background:rgba(181,69,60,0.08);">
+                                        <span class="day">${dia}</span>
+                                        <span class="month">${mes}</span>
+                                    </div>
+                                    <div class="slot-text">
+                                        <strong>Alma Soma · 7 semanas</strong>
+                                        <span>${slot.horario} · Sábados · 1h30</span>
+                                        <span style="color:#B5453C; font-size:0.78rem; font-weight:600;">Turma lotada</span>
+                                    </div>
+                                </div>
+                                <i class="bi bi-x-circle" style="color:#B5453C;"></i>
+                            </div>`;
+                    }
+
+                    return `
+                        <div class="slot-card" onclick='abrirModal(${JSON.stringify(slot)})'>
+                            <div class="slot-info">
+                                <div class="slot-date-badge">
+                                    <span class="day">${dia}</span>
+                                    <span class="month">${mes}</span>
+                                </div>
+                                <div class="slot-text">
+                                    <strong>Alma Soma · 7 semanas</strong>
+                                    <span>${slot.horario} · Todo sábado · 1h30</span>
+                                    <span style="color:var(--moss); font-size:0.78rem; font-weight:600;">${vagasRestantes} vaga${vagasRestantes > 1 ? 's' : ''} disponível${vagasRestantes > 1 ? 'is' : ''}</span>
+                                </div>
+                            </div>
+                            <i class="bi bi-arrow-right slot-arrow"></i>
+                        </div>`;
+                }
+
+                // Card individual normal
+                const labelServico = slot.servico ? `<span style="color:var(--moss); font-size:0.78rem;">${slot.servico}</span>` : '';
+                return `
+                    <div class="slot-card" onclick='abrirModal(${JSON.stringify(slot)})'>
+                        <div class="slot-info">
+                            <div class="slot-date-badge">
+                                <span class="day">${dia}</span>
+                                <span class="month">${mes}</span>
+                            </div>
+                            <div class="slot-text">
+                                <strong>${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}</strong>
+                                <span>${slot.horario}</span>
+                                ${labelServico}
+                            </div>
+                        </div>
+                        <i class="bi bi-arrow-right slot-arrow"></i>
+                    </div>`;
+            }).join('');
+        }
+
+        // ── MODAL DE CONFIRMAÇÃO ──
+        function abrirModal(slot) {
+            slotEscolhido = slot;
+            const data = new Date(slot.dataISO + 'T00:00:00');
+            const dataFormatada = data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', weekday: 'long' });
+            const isGrupo = slot.tipo === 'grupo';
+            const resumo = isGrupo
+                ? `Alma Soma · 7 sábados a partir de ${dataFormatada} às ${slot.horario}`
+                : `${dataFormatada} às ${slot.horario}`;
+
+            const box = document.getElementById('modal-box');
+            box.innerHTML = `
+                <h3>Confirmar agendamento</h3>
+                <div class="modal-summary">
+                    <i class="bi bi-calendar-event"></i> ${resumo}
+                </div>
+                ${!isGrupo ? `
+                <div class="form-group">
+                    <label>Atendimento desejado</label>
+                    <select id="f-servico">
+                        ${SERVICOS.filter(s => s !== 'Alma Soma').map(s => `<option value="${s}">${s}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group" id="f-modalidade-group" style="display:none;">
+                    <label>Modalidade</label>
+                    <select id="f-modalidade">
+                        <option value="Presencial">Presencial</option>
+                        <option value="À Distância">À Distância</option>
+                    </select>
+                </div>` : ''}
+                <div class="form-group">
+                    <label>Seu nome</label>
+                    <input type="text" id="f-nome" placeholder="Nome completo">
+                </div>
+                <div class="form-group">
+                    <label>Data de nascimento</label>
+                    <input type="date" id="f-nascimento">
+                </div>
+                <div class="form-group">
+                    <label>Seu WhatsApp</label>
+                    <input type="text" id="f-tel" placeholder="(15) 99999-9999" maxlength="15">
+                </div>
+                <p class="feedback-msg error" id="f-erro"></p>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                    <button class="btn-confirm" id="btn-confirmar" onclick="confirmarAgendamento()">Confirmar</button>
+                </div>
+            `;
+            document.getElementById('modal-overlay').classList.add('open');
+
+            // Modalidade (Presencial/À Distância) — visível só para Reiki, não aparece no grupo
+            if (!isGrupo) {
+                const servicoSelect   = document.getElementById('f-servico');
+                const modalidadeGrupo = document.getElementById('f-modalidade-group');
+                function atualizarModalidade() {
+                    modalidadeGrupo.style.display = (servicoSelect.value === 'Reiki') ? 'block' : 'none';
+                }
+                atualizarModalidade();
+                servicoSelect.addEventListener('change', atualizarModalidade);
+            }
+
+            // Máscara de telefone
+            document.getElementById('f-tel').addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\D/g,'').substring(0,11);
+                if (!v) { e.target.value=''; return; }
+                if (v.length<=2) e.target.value='('+v;
+                else if (v.length<=6) e.target.value='('+v.substring(0,2)+') '+v.substring(2);
+                else if (v.length<=10) e.target.value='('+v.substring(0,2)+') '+v.substring(2,6)+'-'+v.substring(6);
+                else e.target.value='('+v.substring(0,2)+') '+v.substring(2,7)+'-'+v.substring(7);
+            });
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-overlay').classList.remove('open');
+            slotEscolhido = null;
+        }
+
+        // ── CONFIRMA E SALVA AGENDAMENTO ──
+        async function confirmarAgendamento() {
+            const isGrupo    = slotEscolhido.tipo === 'grupo';
+            const servico    = isGrupo ? 'Alma Soma' : document.getElementById('f-servico').value;
+            const modalidade = (!isGrupo && servico === 'Reiki') ? document.getElementById('f-modalidade').value : null;
+            const nome       = document.getElementById('f-nome').value.trim();
+            const nascimento = document.getElementById('f-nascimento').value;
+            const tel        = document.getElementById('f-tel').value.trim();
+            const erro       = document.getElementById('f-erro');
+            const btn        = document.getElementById('btn-confirmar');
+
+            if (!nome || !tel) {
+                erro.textContent = 'Preencha seu nome e WhatsApp para confirmar.';
+                erro.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Confirmando...';
+
+            tokenGerado = gerarToken();
+
+            try {
+                let slots;
+
+                if (isGrupo) {
+                    // Inscreve o participante em todos os 7 slots da turma
+                    const inscrito = { nome, telefone: tel, nascimento, token: tokenGerado };
+                    slots = dadosAtuais.slots.map(s => {
+                        if (s.turmaId === slotEscolhido.turmaId) {
+                            return { ...s, inscritos: [...(s.inscritos || []), inscrito] };
+                        }
+                        return s;
+                    });
+                } else {
+                    // Reserva individual normal
+                    slots = dadosAtuais.slots.map(s => {
+                        if (s.dataISO === slotEscolhido.dataISO && s.horario === slotEscolhido.horario) {
+                            return { ...s, ocupado: true, cliente: nome, telefone: tel, servico, nascimento, modalidade, token: tokenGerado };
+                        }
+                        return s;
+                    });
+                }
+
+                const novoEstado = { ...dadosAtuais, slots };
+
+                await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+                    body: JSON.stringify(novoEstado)
+                });
+
+                dadosAtuais = novoEstado;
+
+                // Notifica a Flora via Make/WhatsApp
+                if (MAKE_WEBHOOK_URL && MAKE_WEBHOOK_URL !== 'COLOQUE_O_WEBHOOK_DO_MAKE_AQUI') {
+                    fetch(MAKE_WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            cliente: nome,
+                            telefone: tel,
+                            servico,
+                            modalidade,
+                            nascimento,
+                            tipo: isGrupo ? 'grupo' : 'individual',
+                            turmaId: isGrupo ? slotEscolhido.turmaId : null,
+                            data: slotEscolhido.dataISO,
+                            horario: slotEscolhido.horario
+                        })
+                    }).catch(() => {});
+                }
+
+                mostrarSucesso();
+                renderizarSlots();
+
+            } catch (e) {
+                erro.textContent = 'Erro ao confirmar. Tente novamente ou chame no WhatsApp.';
+                erro.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Confirmar';
+            }
+        }
+
+        function mostrarSucesso() {
+            const isGrupo = slotEscolhido.tipo === 'grupo';
+            const data = new Date(slotEscolhido.dataISO + 'T00:00:00');
+            const dataFormatada = data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+            const linkCancelamento = `${window.location.origin}${window.location.pathname}?cancelar=${tokenGerado}`;
+
+            const mensagem = isGrupo
+                ? `Você está inscrita na turma de Alma Soma com início em <strong>${dataFormatada} às ${slotEscolhido.horario}</strong>. Os 7 sábados estão reservados para você. A Flora entrará em contato com os detalhes.`
+                : `Seu atendimento está marcado para <strong>${dataFormatada} às ${slotEscolhido.horario}</strong>. A Flora foi avisada e qualquer detalhe ela combina direto com você.`;
+
+            const box = document.getElementById('modal-box');
+            box.innerHTML = `
+                <div style="text-align:center;">
+                    <div class="success-icon"><i class="bi bi-check-lg"></i></div>
+                    <h3 style="margin-bottom:10px;">${isGrupo ? 'Inscrição confirmada!' : 'Agendamento confirmado!'}</h3>
+                    <p style="color:var(--muted); font-size:0.92rem; margin-bottom:20px;">${mensagem}</p>
+                    <p style="color:var(--muted); font-size:0.8rem; margin-bottom:8px;">Precisar cancelar depois? Guarde este link:</p>
+                    <div style="background:var(--sand); border-radius:8px; padding:10px 12px; font-size:0.76rem; word-break:break-all; margin-bottom:20px; color:var(--clay-dk);">
+                        ${linkCancelamento}
+                    </div>
+                    <button class="btn-confirm" style="width:100%;" onclick="fecharModal()">Fechar</button>
+                </div>
+            `;
+        }
+
+        // ════════════════════════════════════════
+        // CANCELAMENTO PELO PRÓPRIO CLIENTE
+        // ════════════════════════════════════════
+
+        // Abre o modal de busca por WhatsApp
+        function abrirModalCancelamento() {
+            const box = document.getElementById('modal-box');
+            box.innerHTML = `
+                <h3>Cancelar agendamento</h3>
+                <p style="color:var(--muted); font-size:0.88rem; margin-bottom:18px;">Digite o WhatsApp que você usou para agendar.</p>
+                <div class="form-group">
+                    <label>Seu WhatsApp</label>
+                    <input type="text" id="cancel-tel" placeholder="(15) 99999-9999" maxlength="15">
+                </div>
+                <p class="feedback-msg error" id="cancel-erro"></p>
+                <div id="cancel-resultados"></div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="fecharModal()">Fechar</button>
+                    <button class="btn-confirm" onclick="buscarAgendamentosPorTelefone()">Buscar</button>
+                </div>
+            `;
+            document.getElementById('modal-overlay').classList.add('open');
+
+            document.getElementById('cancel-tel').addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\D/g,'').substring(0,11);
+                if (!v) { e.target.value=''; return; }
+                if (v.length<=2) e.target.value='('+v;
+                else if (v.length<=6) e.target.value='('+v.substring(0,2)+') '+v.substring(2);
+                else if (v.length<=10) e.target.value='('+v.substring(0,2)+') '+v.substring(2,6)+'-'+v.substring(6);
+                else e.target.value='('+v.substring(0,2)+') '+v.substring(2,7)+'-'+v.substring(7);
+            });
+        }
+
+        // Busca agendamentos ativos com aquele número de WhatsApp
+        function buscarAgendamentosPorTelefone() {
+            const telDigitado = document.getElementById('cancel-tel').value.replace(/\D/g,'');
+            const erro = document.getElementById('cancel-erro');
+            const resultados = document.getElementById('cancel-resultados');
+            erro.style.display = 'none';
+            resultados.innerHTML = '';
+
+            if (!telDigitado) {
+                erro.textContent = 'Digite seu número de WhatsApp.';
+                erro.style.display = 'block';
+                return;
+            }
+
+            // Busca individuais
+            const individuais = (dadosAtuais.slots || []).filter(s =>
+                !s.tipo && s.ocupado && (s.telefone || '').replace(/\D/g,'') === telDigitado
+            );
+
+            // Busca em turmas de grupo (sessao 1 apenas para não mostrar 7x)
+            const grupos = [];
+            const turmasVistas = new Set();
+            (dadosAtuais.slots || []).forEach(s => {
+                if (s.tipo === 'grupo' && s.sessaoNum === 1 && !turmasVistas.has(s.turmaId)) {
+                    const inscrito = (s.inscritos || []).find(i => (i.telefone||'').replace(/\D/g,'') === telDigitado);
+                    if (inscrito) {
+                        turmasVistas.add(s.turmaId);
+                        grupos.push({ slot: s, inscrito });
+                    }
+                }
+            });
+
+            if (individuais.length === 0 && grupos.length === 0) {
+                resultados.innerHTML = `<p style="color:var(--muted); font-size:0.86rem; margin-top:14px;">Nenhum agendamento encontrado com esse número.</p>`;
+                return;
+            }
+
+            const htmlIndividuais = individuais.map(s => {
+                const data = new Date(s.dataISO + 'T00:00:00');
+                const dataFormatada = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+                return `
+                    <div style="background:var(--sand); border-radius:8px; padding:12px 14px; margin-top:12px; font-size:0.88rem;">
+                        <strong>${s.servico || ''}</strong> — ${dataFormatada} às ${s.horario}
+                        <button class="btn-cancel" style="width:100%; margin-top:10px; border-color:#B5453C; color:#B5453C;"
+                            onclick='mostrarConfirmacaoCancelamento(${JSON.stringify(s)})'>
+                            <i class="bi bi-x-circle"></i> Cancelar este agendamento
+                        </button>
+                    </div>`;
+            });
+
+            const htmlGrupos = grupos.map(({ slot, inscrito }) => {
+                const data = new Date(slot.dataISO + 'T00:00:00');
+                const dataFormatada = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+                return `
+                    <div style="background:var(--sand); border-radius:8px; padding:12px 14px; margin-top:12px; font-size:0.88rem;">
+                        <strong>Alma Soma · 7 semanas</strong> — a partir de ${dataFormatada} às ${slot.horario}
+                        <button class="btn-cancel" style="width:100%; margin-top:10px; border-color:#B5453C; color:#B5453C;"
+                            onclick='mostrarConfirmacaoCancelamentoGrupo(${JSON.stringify(slot)}, "${inscrito.token}")'>
+                            <i class="bi bi-x-circle"></i> Cancelar inscrição na turma
+                        </button>
+                    </div>`;
+            });
+
+            resultados.innerHTML = [...htmlIndividuais, ...htmlGrupos].join('');
+        }
+
+        // Tela de confirmação final, usada tanto pela busca quanto pelo link direto
+        function mostrarConfirmacaoCancelamento(slot) {
+            const data = new Date(slot.dataISO + 'T00:00:00');
+            const dataFormatada = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+
+            const box = document.getElementById('modal-box');
+            box.innerHTML = `
+                <h3>Confirmar cancelamento</h3>
+                <div class="modal-summary">
+                    <i class="bi bi-calendar-event"></i> ${slot.servico || ''} — ${dataFormatada} às ${slot.horario}
+                </div>
+                <p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px;">Tem certeza que deseja cancelar? O horário ficará disponível novamente para outras pessoas.</p>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="fecharModal()">Voltar</button>
+                    <button class="btn-confirm" style="background:#B5453C;" onclick="executarCancelamentoCliente('${slot.dataISO}','${slot.horario}')">Sim, cancelar</button>
+                </div>
+            `;
+            document.getElementById('modal-overlay').classList.add('open');
+        }
+
+        // Executa o cancelamento de fato, liberando o horário
+        async function executarCancelamentoCliente(dataISO, horario) {
+            try {
+                const slots = dadosAtuais.slots.map(s => {
+                    if (s.dataISO === dataISO && s.horario === horario) {
+                        return { dataISO: s.dataISO, horario: s.horario, ocupado: false };
+                    }
+                    return s;
+                });
+                const novoEstado = { ...dadosAtuais, slots };
+
+                await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+                    body: JSON.stringify(novoEstado)
+                });
+
+                dadosAtuais = novoEstado;
+                renderizarSlots();
+
+                const box = document.getElementById('modal-box');
+                box.innerHTML = `
+                    <div style="text-align:center;">
+                        <div class="success-icon" style="background:#B5453C;"><i class="bi bi-check-lg"></i></div>
+                        <h3 style="margin-bottom:10px;">Agendamento cancelado</h3>
+                        <p style="color:var(--muted); font-size:0.92rem; margin-bottom:24px;">Seu horário foi liberado. Se quiser, você pode agendar novamente quando precisar.</p>
+                        <button class="btn-confirm" style="width:100%;" onclick="fecharModal()">Fechar</button>
+                    </div>
+                `;
+            } catch (e) {
+                alert('Erro ao cancelar. Tente novamente ou chame no WhatsApp.');
+            }
+        }
+
+        // Confirmação de cancelamento de inscrição em turma (pelo cliente)
+        function mostrarConfirmacaoCancelamentoGrupo(slot, token) {
+            const data = new Date(slot.dataISO + 'T00:00:00');
+            const dataFormatada = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'long' });
+            const box = document.getElementById('modal-box');
+            box.innerHTML = `
+                <h3>Confirmar cancelamento</h3>
+                <div class="modal-summary">
+                    <i class="bi bi-calendar-event"></i> Alma Soma · 7 semanas a partir de ${dataFormatada} às ${slot.horario}
+                </div>
+                <p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px;">Tem certeza que deseja cancelar sua inscrição? Você será removida de todas as 7 sessões.</p>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="fecharModal()">Voltar</button>
+                    <button class="btn-confirm" style="background:#B5453C;" onclick="executarCancelamentoGrupoCliente('${slot.turmaId}','${token}')">Sim, cancelar</button>
+                </div>
+            `;
+            document.getElementById('modal-overlay').classList.add('open');
+        }
+
+        // Executa o cancelamento de inscrição em grupo pelo cliente
+        async function executarCancelamentoGrupoCliente(turmaId, token) {
+            try {
+                const slots = dadosAtuais.slots.map(s => {
+                    if (s.turmaId === turmaId) {
+                        return { ...s, inscritos: (s.inscritos || []).filter(i => i.token !== token) };
+                    }
+                    return s;
+                });
+                const novoEstado = { ...dadosAtuais, slots };
+                await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+                    body: JSON.stringify(novoEstado)
+                });
+                dadosAtuais = novoEstado;
+                renderizarSlots();
+                const box = document.getElementById('modal-box');
+                box.innerHTML = `
+                    <div style="text-align:center;">
+                        <div class="success-icon" style="background:#B5453C;"><i class="bi bi-check-lg"></i></div>
+                        <h3 style="margin-bottom:10px;">Inscrição cancelada</h3>
+                        <p style="color:var(--muted); font-size:0.92rem; margin-bottom:24px;">Sua inscrição na turma de Alma Soma foi cancelada.</p>
+                        <button class="btn-confirm" style="width:100%;" onclick="fecharModal()">Fechar</button>
+                    </div>`;
+            } catch (e) {
+                alert('Erro ao cancelar. Tente novamente ou chame no WhatsApp.');
+            }
+        }
+
+        // Verifica link de cancelamento na URL (individual ou grupo)
+        function verificarLinkCancelamento() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('cancelar');
+            if (!token || !dadosAtuais) return;
+
+            // Tenta individual primeiro
+            const slotIndividual = (dadosAtuais.slots || []).find(s => s.token === token && s.ocupado);
+            if (slotIndividual) { mostrarConfirmacaoCancelamento(slotIndividual); return; }
+
+            // Tenta grupo (procura o token entre os inscritos da sessão 1)
+            let slotGrupo = null;
+            for (const s of (dadosAtuais.slots || [])) {
+                if (s.tipo === 'grupo' && s.sessaoNum === 1) {
+                    const inscrito = (s.inscritos || []).find(i => i.token === token);
+                    if (inscrito) { slotGrupo = s; break; }
+                }
+            }
+            if (slotGrupo) { mostrarConfirmacaoCancelamentoGrupo(slotGrupo, token); return; }
+
+            alert('Este link de cancelamento não é mais válido — talvez já tenha sido cancelado.');
+        }
+
+        carregarHorarios().then(verificarLinkCancelamento);
+    </script>
 </body>
 </html>
