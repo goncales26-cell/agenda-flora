@@ -414,52 +414,56 @@
             const pillRect = pill.getBoundingClientRect();
             const cardW = Math.min(300, window.innerWidth - 32);
             const margem = 16;
-
-            // Posição horizontal: centraliza na pílula mas trava dentro da tela
             let left = pillRect.left + pillRect.width / 2 - cardW / 2;
             left = Math.max(margem, Math.min(left, window.innerWidth - cardW - margem));
-
-            // Posição vertical: tenta acima, se não couber vai abaixo
-            const espacoAcima = pillRect.top;
             const cardH = Math.min(card.scrollHeight, window.innerHeight * 0.7);
-            let top;
-            if (espacoAcima > cardH + 16) {
-                top = pillRect.top - cardH - 12;
-            } else {
-                top = pillRect.bottom + 12;
-            }
-
-            card.style.left = left + 'px';
-            card.style.top  = top  + 'px';
+            const top = pillRect.top > cardH + 16
+                ? pillRect.top - cardH - 12
+                : pillRect.bottom + 12;
+            card.style.left  = left + 'px';
+            card.style.top   = top  + 'px';
             card.style.width = cardW + 'px';
         }
 
-        function toggleTip(event, id) {
-            event.stopPropagation();
-            const card = document.getElementById(id);
-            const pill = event.currentTarget;
-            const jaAberto = card.classList.contains('aberto');
-            document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
-            if (!jaAberto) {
-                card.classList.add('aberto');
-                posicionarTip(card, pill);
-            }
-        }
+        // Detecta se o dispositivo tem hover real (desktop) ou não (mobile/touch)
+        const temHover = window.matchMedia('(hover: hover)').matches;
 
-        // Hover no desktop — abre e posiciona pelo mouse
         document.querySelectorAll('.service-pill').forEach(pill => {
-            pill.addEventListener('mouseenter', () => {
-                const id = pill.querySelector('.tip-card')?.id;
-                if (!id) return;
+            const card = pill.querySelector('.tip-card');
+            if (!card) return;
+
+            if (temHover) {
+                // Desktop: abre no hover, fecha ao sair
+                pill.addEventListener('mouseenter', () => {
+                    document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
+                    card.classList.add('aberto');
+                    posicionarTip(card, pill);
+                });
+                pill.addEventListener('mouseleave', (e) => {
+                    if (!card.contains(e.relatedTarget)) card.classList.remove('aberto');
+                });
+                card.addEventListener('mouseleave', (e) => {
+                    if (!pill.contains(e.relatedTarget)) card.classList.remove('aberto');
+                });
+            } else {
+                // Mobile: abre/fecha no toque
+                pill.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const jaAberto = card.classList.contains('aberto');
+                    document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
+                    if (!jaAberto) {
+                        card.classList.add('aberto');
+                        posicionarTip(card, pill);
+                    }
+                });
+            }
+        });
+
+        // Fecha ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.service-pill') && !e.target.closest('.tip-card')) {
                 document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
-                const card = document.getElementById(id);
-                card.classList.add('aberto');
-                posicionarTip(card, pill);
-            });
-            pill.addEventListener('mouseleave', (e) => {
-                const card = pill.querySelector('.tip-card');
-                if (card && !card.matches(':hover')) card.classList.remove('aberto');
-            });
+            }
         });
 
         function fecharTooltipsExterno(event) {
@@ -467,11 +471,6 @@
                 document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
             }
         }
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.service-pill') && !e.target.closest('.tip-card')) {
-                document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
-            }
-        });
 
         // ════════════════════════════════════════
         // CONFIGURAÇÃO — JSONBin
