@@ -99,8 +99,58 @@
         .service-pill {
             display: inline-flex; align-items: center; gap: 8px;
             font-size: 0.84rem; color: var(--clay-dk); font-weight: 500;
+            cursor: pointer; position: relative;
+            padding: 4px 8px; border-radius: 6px;
+            transition: background 0.2s;
+            user-select: none;
         }
+        .service-pill:hover { background: rgba(31,77,51,0.08); }
         .service-pill i { font-size: 1rem; }
+
+        /* Tooltip card */
+        .tip-card {
+            position: absolute;
+            bottom: calc(100% + 12px);
+            left: 50%; transform: translateX(-50%);
+            background: white;
+            border: 1.5px solid var(--line);
+            border-radius: 12px;
+            padding: 18px 20px;
+            width: 300px;
+            box-shadow: 0 12px 40px rgba(31,77,51,0.15);
+            font-size: 0.82rem;
+            color: var(--ink);
+            text-align: left;
+            z-index: 500;
+            display: none;
+            animation: tipIn 0.18s ease;
+        }
+        .tip-card::after {
+            content: '';
+            position: absolute;
+            top: 100%; left: 50%; transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: white;
+        }
+        .tip-card::before {
+            content: '';
+            position: absolute;
+            top: 100%; left: 50%; transform: translateX(-50%);
+            border: 9px solid transparent;
+            border-top-color: var(--line);
+            margin-top: 1px;
+        }
+        .tip-card.aberto { display: block; }
+        @keyframes tipIn { from { opacity:0; transform:translateX(-50%) translateY(6px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+        .tip-card h4 { font-family:'Fraunces',serif; font-weight:600; font-size:0.95rem; color:var(--clay); margin-bottom:10px; }
+        .tip-section { margin-bottom:10px; }
+        .tip-section:last-child { margin-bottom:0; }
+        .tip-label { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--moss); font-weight:600; margin-bottom:3px; }
+        .tip-text { color:var(--muted); line-height:1.55; font-size:0.82rem; }
+
+        @media (max-width: 480px) {
+            .tip-card { width: 260px; font-size:0.8rem; }
+        }
 
         /* ── SEÇÃO AGENDA ── */
         .section { max-width: 640px; margin: 0 auto; padding: 64px 24px; }
@@ -235,12 +285,97 @@
         </div>
     </section>
 
-    <div class="services-strip">
-        <span class="service-pill"><i class="bi bi-sun"></i> Reiki</span>
-        <span class="service-pill"><i class="bi bi-droplet"></i> Alma Soma</span>
-        <span class="service-pill"><i class="bi bi-stars"></i> Tarô</span>
-        <span class="service-pill"><i class="bi bi-flower3"></i> Baralho Cigano</span>
-        <span class="service-pill"><i class="bi bi-circle"></i> Mesa Radiônica</span>
+    <div class="services-strip" id="services-strip" onclick="fecharTooltipsExterno(event)">
+        <span class="service-pill" onclick="toggleTip(event,'tip-reiki')">
+            <i class="bi bi-sun"></i> Reiki
+            <div class="tip-card" id="tip-reiki">
+                <h4>✨ Reiki</h4>
+                <div class="tip-section">
+                    <div class="tip-label">O que é</div>
+                    <div class="tip-text">Técnica japonesa de imposição de mãos que canaliza a energia vital universal (Ki), promovendo equilíbrio e autocura no corpo, mente e espírito.</div>
+                </div>
+                <div class="tip-section">
+                    <div class="tip-label">Benefícios</div>
+                    <div class="tip-text">Redução de estresse e ansiedade, alívio de dores, melhora do sono, fortalecimento imunológico e equilíbrio emocional profundo.</div>
+                </div>
+                <div class="tip-section">
+                    <div class="tip-label">O que agrega</div>
+                    <div class="tip-text">Tratamento integrativo complementar à medicina convencional, auxiliando na recuperação e proporcionando relaxamento profundo.</div>
+                </div>
+            </div>
+        </span>
+        <span class="service-pill" onclick="toggleTip(event,'tip-alma')">
+            <i class="bi bi-droplet"></i> Alma Soma
+            <div class="tip-card" id="tip-alma">
+                <h4>🌊 Alma Soma®</h4>
+                <div class="tip-section">
+                    <div class="tip-label">O que é</div>
+                    <div class="tip-text">Método de restauração integral que compreende o ser humano como unidade de corpo, mente e espírito. Utiliza neurociência e arquétipos para quebrar ciclos de repetição e reorganizar padrões inconscientes.</div>
+                </div>
+                <div class="tip-section">
+                    <div class="tip-label">Benefícios</div>
+                    <div class="tip-text">Identifica e dissolve bloqueios invisíveis, reorganiza rotas neurais disfuncionais e desenvolve maturidade emocional — da sobrevivência à expansão.</div>
+                </div>
+                <div class="tip-section">
+                    <div class="tip-label">O que agrega</div>
+                    <div class="tip-text">Transforma o indivíduo de posição passiva para ativa, alinhando ações com valores profundos e restaurando liberdade de escolha e propósito.</div>
+                </div>
+            </div>
+        </span>
+        <span class="service-pill" onclick="toggleTip(event,'tip-taro')">
+            <i class="bi bi-stars"></i> Tarô
+            <div class="tip-card" id="tip-taro">
+                <h4>🌟 Tarô Terapêutico</h4>
+                <div class="tip-section">
+                    <div class="tip-label">O que é</div>
+                    <div class="tip-text">Diferente da leitura divinatória, o Tarô Terapêutico usa os arquétipos das cartas como espelho do inconsciente para introspecção e reflexão sobre padrões de vida.</div>
+                </div>
+                <div class="tip-section">
+                    <div class="tip-label">Benefícios</div>
+                    <div class="tip-text">Auxílio na tomada de decisões, clareza em situações complexas, desenvolvimento da intuição e suporte em momentos de crise ou transição.</div>
+                </div>
+                <div class="tip-section">
+                    <div class="tip-label">O que agrega</div>
+                    <div class="tip-text">Promove o autoconhecimento e a compreensão de padrões de comportamento, incentivando a responsabilidade pela própria jornada de evolução.</div>
+                </div>
+            </div>
+        </span>
+        <span class="service-pill" onclick="toggleTip(event,'tip-cigano')">
+            <i class="bi bi-flower3"></i> Baralho Cigano
+            <div class="tip-card" id="tip-cigano">
+                <h4>🌸 Baralho Cigano</h4>
+                <div class="tip-section">
+                    <div class="tip-label">O que é</div>
+                    <div class="tip-text">Sistema oracular de 36 cartas com símbolos do cotidiano, focado na realidade concreta e nas situações do "aqui e agora".</div>
+                </div>
+                <div class="tip-section">
+                    <div class="tip-label">Benefícios</div>
+                    <div class="tip-text">Visão clara de obstáculos, orientação prática para escolhas de curto e médio prazo e auxílio na compreensão de dinâmicas relacionais.</div>
+                </div>
+                <div class="tip-section">
+                    <div class="tip-label">O que agrega</div>
+                    <div class="tip-text">Facilita a visualização de cenários e a identificação de energias que influenciam o dia a dia — ideal para questões práticas da vida cotidiana.</div>
+                </div>
+            </div>
+        </span>
+        <span class="service-pill" onclick="toggleTip(event,'tip-radionica')">
+            <i class="bi bi-circle"></i> Mesa Radiônica
+            <div class="tip-card" id="tip-radionica">
+                <h4>🔵 Mesa Radiônica</h4>
+                <div class="tip-section">
+                    <div class="tip-label">O que é</div>
+                    <div class="tip-text">Ferramenta terapêutica baseada nos princípios da radiestesia e da radiônica, que mede frequências energéticas e realiza ajustes e limpezas energéticas.</div>
+                </div>
+                <div class="tip-section">
+                    <div class="tip-label">Benefícios</div>
+                    <div class="tip-text">Identifica e transmuta crenças limitantes, limpa bloqueios energéticos, harmoniza ambientes e auxilia na resolução de conflitos internos ou familiares.</div>
+                </div>
+                <div class="tip-section">
+                    <div class="tip-label">O que agrega</div>
+                    <div class="tip-text">Atua na reprogramação de padrões mentais e na limpeza de registros energéticos densos, restaurando o fluxo da vida em diversas áreas.</div>
+                </div>
+            </div>
+        </span>
     </div>
 
     <section class="section">
@@ -255,6 +390,12 @@
 
     <footer>
         <p>Flora Macedo</p>
+        <p style="margin-top:6px;">
+            <a href="https://www.instagram.com/floramacedo41/" target="_blank"
+               style="display:inline-flex; align-items:center; gap:6px; color:var(--clay-dk); text-decoration:none; font-weight:600;">
+                <i class="bi bi-instagram"></i> @floramacedo41
+            </a>
+        </p>
         <p style="margin-top:4px;">Dúvidas? <a href="https://wa.me/5515981449021" target="_blank">Fale no WhatsApp</a></p>
         <div style="margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
             <a href="javascript:void(0)" onclick="abrirModalCancelamento()"
@@ -270,7 +411,7 @@
                 <i class="bi bi-gear-fill"></i> Painel da Flora
             </a>
         </div>
-        <p style="margin-top:14px; font-size:0.74rem; opacity:0.75;">Desenvolvido por <strong style="color:var(--clay);">65.611.420 FLAVIO GONCALES</strong></p>
+        <p style="margin-top:14px; font-size:0.74rem; opacity:0.75;">Desenvolvido por <a href="https://www.goncalestech.com.br/" target="_blank" style="color:var(--clay); font-weight:600; text-decoration:none;">65.611.420 FLAVIO GONCALES</a></p>
     </footer>
 
     <!-- MODAL DE CONFIRMAÇÃO -->
@@ -281,6 +422,25 @@
     </div>
 
     <script>
+        // ── TOOLTIPS DAS TÉCNICAS ──
+        function toggleTip(event, id) {
+            event.stopPropagation();
+            const card = document.getElementById(id);
+            const jaAberto = card.classList.contains('aberto');
+            // Fecha todos
+            document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
+            // Abre só se estava fechado
+            if (!jaAberto) card.classList.add('aberto');
+        }
+        function fecharTooltipsExterno(event) {
+            if (!event.target.closest('.service-pill')) {
+                document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
+            }
+        }
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
+        });
+
         // ════════════════════════════════════════
         // CONFIGURAÇÃO — JSONBin
         // ════════════════════════════════════════
