@@ -109,41 +109,25 @@
 
         /* Tooltip card */
         .tip-card {
-            position: absolute;
-            bottom: calc(100% + 12px);
-            left: 50%; transform: translateX(-50%);
+            position: fixed;
             background: white;
             border: 1.5px solid var(--line);
             border-radius: 12px;
             padding: 18px 20px;
-            width: 300px;
-            box-shadow: 0 12px 40px rgba(31,77,51,0.15);
+            width: min(300px, calc(100vw - 32px));
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 12px 40px rgba(31,77,51,0.18);
             font-size: 0.82rem;
             color: var(--ink);
             text-align: left;
-            z-index: 500;
+            z-index: 900;
             display: none;
             animation: tipIn 0.18s ease;
             pointer-events: none;
         }
-        /* Desktop: abre no hover | Mobile: abre no clique (.aberto) */
-        .service-pill:hover .tip-card,
+        /* Desktop: abre no hover — posição calculada via JS */
         .tip-card.aberto { display: block; pointer-events: auto; }
-        .tip-card::after {
-            content: '';
-            position: absolute;
-            top: 100%; left: 50%; transform: translateX(-50%);
-            border: 8px solid transparent;
-            border-top-color: white;
-        }
-        .tip-card::before {
-            content: '';
-            position: absolute;
-            top: 100%; left: 50%; transform: translateX(-50%);
-            border: 9px solid transparent;
-            border-top-color: var(--line);
-            margin-top: 1px;
-        }
         @keyframes tipIn { from { opacity:0; transform:translateX(-50%) translateY(6px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
         .tip-card h4 { font-family:'Fraunces',serif; font-weight:600; font-size:0.95rem; color:var(--clay); margin-bottom:10px; }
         .tip-section { margin-bottom:10px; }
@@ -426,22 +410,67 @@
 
     <script>
         // ── TOOLTIPS DAS TÉCNICAS ──
+        function posicionarTip(card, pill) {
+            const pillRect = pill.getBoundingClientRect();
+            const cardW = Math.min(300, window.innerWidth - 32);
+            const margem = 16;
+
+            // Posição horizontal: centraliza na pílula mas trava dentro da tela
+            let left = pillRect.left + pillRect.width / 2 - cardW / 2;
+            left = Math.max(margem, Math.min(left, window.innerWidth - cardW - margem));
+
+            // Posição vertical: tenta acima, se não couber vai abaixo
+            const espacoAcima = pillRect.top;
+            const cardH = Math.min(card.scrollHeight, window.innerHeight * 0.7);
+            let top;
+            if (espacoAcima > cardH + 16) {
+                top = pillRect.top - cardH - 12;
+            } else {
+                top = pillRect.bottom + 12;
+            }
+
+            card.style.left = left + 'px';
+            card.style.top  = top  + 'px';
+            card.style.width = cardW + 'px';
+        }
+
         function toggleTip(event, id) {
             event.stopPropagation();
             const card = document.getElementById(id);
+            const pill = event.currentTarget;
             const jaAberto = card.classList.contains('aberto');
-            // Fecha todos
             document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
-            // Abre só se estava fechado
-            if (!jaAberto) card.classList.add('aberto');
+            if (!jaAberto) {
+                card.classList.add('aberto');
+                posicionarTip(card, pill);
+            }
         }
+
+        // Hover no desktop — abre e posiciona pelo mouse
+        document.querySelectorAll('.service-pill').forEach(pill => {
+            pill.addEventListener('mouseenter', () => {
+                const id = pill.querySelector('.tip-card')?.id;
+                if (!id) return;
+                document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
+                const card = document.getElementById(id);
+                card.classList.add('aberto');
+                posicionarTip(card, pill);
+            });
+            pill.addEventListener('mouseleave', (e) => {
+                const card = pill.querySelector('.tip-card');
+                if (card && !card.matches(':hover')) card.classList.remove('aberto');
+            });
+        });
+
         function fecharTooltipsExterno(event) {
-            if (!event.target.closest('.service-pill')) {
+            if (!event.target.closest('.service-pill') && !event.target.closest('.tip-card')) {
                 document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
             }
         }
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.service-pill') && !e.target.closest('.tip-card')) {
+                document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('aberto'));
+            }
         });
 
         // ════════════════════════════════════════
