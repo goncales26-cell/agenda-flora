@@ -414,15 +414,24 @@
             const pillRect = pill.getBoundingClientRect();
             const cardW = Math.min(300, window.innerWidth - 32);
             const margem = 16;
+
+            // Horizontal: centraliza na pílula mas trava dentro da tela
             let left = pillRect.left + pillRect.width / 2 - cardW / 2;
             left = Math.max(margem, Math.min(left, window.innerWidth - cardW - margem));
-            const cardH = Math.min(card.scrollHeight, window.innerHeight * 0.7);
-            const top = pillRect.top > cardH + 16
-                ? pillRect.top - cardH - 12
-                : pillRect.bottom + 12;
             card.style.left  = left + 'px';
-            card.style.top   = top  + 'px';
             card.style.width = cardW + 'px';
+
+            // Vertical: SEMPRE acima da faixa de serviços
+            // Deixa o card visível temporariamente para medir a altura real
+            card.style.visibility = 'hidden';
+            card.style.top = '0px';
+            const cardH = card.offsetHeight || 320;
+            card.style.visibility = '';
+
+            let top = pillRect.top - cardH - 12;
+            // Se sair pelo topo da tela, ancora em 8px do topo com scroll interno
+            top = Math.max(8, top);
+            card.style.top = top + 'px';
         }
 
         // Detecta se o dispositivo tem hover real (desktop) ou não (mobile/touch)
