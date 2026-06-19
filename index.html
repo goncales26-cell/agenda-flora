@@ -124,7 +124,11 @@
             z-index: 500;
             display: none;
             animation: tipIn 0.18s ease;
+            pointer-events: none;
         }
+        /* Desktop: abre no hover | Mobile: abre no clique (.aberto) */
+        .service-pill:hover .tip-card,
+        .tip-card.aberto { display: block; pointer-events: auto; }
         .tip-card::after {
             content: '';
             position: absolute;
@@ -140,7 +144,6 @@
             border-top-color: var(--line);
             margin-top: 1px;
         }
-        .tip-card.aberto { display: block; }
         @keyframes tipIn { from { opacity:0; transform:translateX(-50%) translateY(6px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
         .tip-card h4 { font-family:'Fraunces',serif; font-weight:600; font-size:0.95rem; color:var(--clay); margin-bottom:10px; }
         .tip-section { margin-bottom:10px; }
